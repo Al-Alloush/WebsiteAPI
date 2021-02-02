@@ -63,6 +63,10 @@ If ef command-line tool of EntityFramework not installed, Install it by this com
 - ``Swashbuckle.AspNetCore.SwaggerGen``, select last version and in **API Project**
 - ``Swashbuckle.AspNetCore.SwaggerUI``, select last version and in **API Project**
 
+## install SendGrid & Twilio tooles to send emails and SMS
+- Install **SendGrid package** from *NuGet* , last version and in **Infrastructure project**.
+- install **Twilio package** from *NuGet*, last version in **Infrastructure project**.
+
 ### then:
 ```
 dotnet restore
@@ -107,11 +111,47 @@ services.AddIdentityCore<AppUser>() /*Add service for type 'Microsoft.AspNetCore
         .AddEntityFrameworkStores<AppDbContext>() /*to avoid error :Unable to resolve service for type 'Microsoft.AspNetCore.Identity.IUserStore`1 */ ; 
 ```
 then:
-- create Infrastructure.Identity.InitializeDefaultData class to Initialize Roles, SuperAdmin user and seed users data
-- in API/program.cs change CreateHostBuilder(args).Build().Run() structure to create Migrations then update database, and add Default Data like Roles, languages, uploadTypes and SuperAdmin.
+- create ``Infrastructure.Identity.InitializeDefaultData`` class to Initialize Roles, SuperAdmin user
+- in ``API/program.cs`` change ``CreateHostBuilder(args).Build().Run()`` structure to create Migrations then update database, and add Default Data like Roles, languages, uploadTypes and SuperAdmin.
 - and change the ``Main`` method in ``API/program.cs`` project to **Task**
 
 ---
 
+## Adding AddDefaultTokenProviders, AddSignInManager and Token service JWT(Json Web Token)
+- inside ``startup.cs`` or inside extention file add these Services then add this file inside ``startup.cs`` file.
 
+### Add token generation to generat token:
+- first create ``ITokenService.cs`` inside **Core Project** then the ``TokenService.cs`` inside **Infrastructure.Services Project**,
 
+### to work JWT:
+- add ``app.UseAuthentication()``; pipline(Configure) method inside ``startup.cs``, directly before ``app.UseAuthorization();`` to work Authorization service
+
+---
+
+## Add Email(SendGrid API) and SMS(Twilio API) Sender Services
+
+### SendGrid API) Send Verification, ResetPassword, ... -email
+Create an account in SendGrud website 
+- Create a key 
+- Confirm an email to send messages from this email, using another email will not send messages
+- add Key and email in ``appSettings.json`` for Securety:
+```
+"SendGridAPI":{ 
+    "SendGridApiKey": "SG.s4zGLBIKRoqg1HosQtGrvg.IXi -...", 
+    "OutputEmail": "example@example.com" 
+}
+```
+
+### Twilio API) Send SMS to Mobile Number
+- Create accoute in https://www.twilio.com/
+- add Key and email in ``appSettings.json`` for Securety:
+```
+"SendSmsTwilioAPI":{
+    "AccountSID":"AC61eb3b69558ead4...",
+    "AuthToken": "912409bf521b9516c...",
+    "TwilioPhoneNumber":"+1251359..."
+}
+```
+- Create ``EmailSmsSenderService`` class inside **Infrastructure Project** then add this class as a Service in ``Startup.cs`` class: ``services.AddScoped<EmailSmsSenderService>();``
+
+---
