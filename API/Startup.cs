@@ -1,7 +1,9 @@
 using AutoMapper;
 using Core.Helppers;
+using Infrastructure.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,6 +25,13 @@ namespace API
             services.AddControllers();
             // Add Mapping Tools
             services.AddAutoMapper(typeof(MappingProfiles));
+
+            // Add Sqlite DB Service
+            services.AddDbContext<AppDbContext>(x =>
+            {
+                x.UseSqlite(Configuration.GetConnectionString("DbConnection"));
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

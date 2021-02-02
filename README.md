@@ -67,3 +67,37 @@ If ef command-line tool of EntityFramework not installed, Install it by this com
 ```
 dotnet restore
 ```
+---
+
+## Create Database contain all  Identities  Tables of EntityFrameworkCore Library
+First Create a new class ``AppUser`` that inherits from ``IdentityUser`` class and add some columns we need inside **Core Project**, and creadte ``Address`` Table with one to one relation.
+
+In **Infrastructure Project** create ``AppDbContext``, then inside ``setting.development.json`` add Connection Strings data:
+```
+"ConnectionStrings": {
+"DbConnection": "Data source=standardDB.db"
+}
+```
+then add connection service in ``startup.cs``  inside ``ConfigureServices`` methode in **API project**
+```
+services.AddDbContext<AppDbContext>(x =>
+{
+    x.UseSqlite(Configuration.GetConnectionString("DbConnection"));
+});
+```
+
+###  ef Commands to work with database:
+```
+dotnet ef migrations add InitDB -p Infrastructure -s API -o Data/Migrations -c AppDbContext    // Create new Migration:
+
+dotnet ef database update  -p Infrastructure -s API -c AppDbContext         // Update Database
+
+dotnet ef migrations Remove -p Infrastructure -s API -c AppDbContext        // Remove last Migration
+
+dotnet ef database drop -p Infrastructure -s API -c AppDbContext            // remove Database
+```
+---
+
+
+
+
