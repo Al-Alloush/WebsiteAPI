@@ -155,3 +155,16 @@ Create an account in SendGrud website
 - Create ``EmailSmsSenderService`` class inside **Infrastructure Project** then add this class as a Service in ``Startup.cs`` class: ``services.AddScoped<EmailSmsSenderService>();``
 
 ---
+## add AddSwagger services and pipline
+create ``AddSwaggerDocumentation.cs`` inside ApiServices folder
+add inside ``appsettings.Development.json`` file:
+```
+  "ConstantNames": {
+    "APIProjectName": "WebApplication",
+    "APIVersion": "v1",
+    "SwaggerAPINameAndVirsion": "WebApplication API v1",
+    "SwaggerURL": "/swagger/v1/swagger.json"
+  }
+```
+then above ``app.UseEndpoints(endpoints`` inside ``startup.cs`` file add ``app.UseSwaggerDocumention(Configuration);``
+---

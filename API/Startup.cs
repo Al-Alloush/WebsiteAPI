@@ -36,7 +36,11 @@ namespace API
             // Add IdentityAndTokenServices from Extension file
             services.AddIdentityServices(Configuration);
 
-           
+            //
+            services.AddSwaggerDocumentation(Configuration);
+
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +58,9 @@ namespace API
             // to worke Authentication JWT Service
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // API/Extensions/SwaggerServiceExtensions.cs
+            app.UseSwaggerDocumention(Configuration);
 
             app.UseEndpoints(endpoints =>
             {
