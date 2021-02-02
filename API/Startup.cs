@@ -1,8 +1,10 @@
 using AutoMapper;
 using Core.Helppers;
+using Core.Models.Identity;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +33,12 @@ namespace API
             {
                 x.UseSqlite(Configuration.GetConnectionString("DbConnection"));
             });
+
+            /********************************************************************/
+            services.AddIdentityCore<AppUser>() /*Add service for type 'Microsoft.AspNetCore.Identity.UserManager:*/
+                    .AddRoles<IdentityRole>() /*Add IdentityRole service in Application:*/
+                    .AddEntityFrameworkStores<AppDbContext>() /*to avoid error :Unable to resolve service for type 'Microsoft.AspNetCore.Identity.IUserStore`1 */ ; 
+            /********************************************************************/
 
         }
 

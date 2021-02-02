@@ -99,5 +99,19 @@ dotnet ef database drop -p Infrastructure -s API -c AppDbContext            // r
 ---
 
 
+## Add default Roles, languages, uploadTypes, SuperAdmin data. Add Models UploadType, Upload,... and some Services
+in ``startup.cs`` class add :
+```
+services.AddIdentityCore<AppUser>() /*Add service for type 'Microsoft.AspNetCore.Identity.UserManager:*/
+        .AddRoles<IdentityRole>() /*Add IdentityRole service in Application:*/
+        .AddEntityFrameworkStores<AppDbContext>() /*to avoid error :Unable to resolve service for type 'Microsoft.AspNetCore.Identity.IUserStore`1 */ ; 
+```
+then:
+- create Infrastructure.Identity.InitializeDefaultData class to Initialize Roles, SuperAdmin user and seed users data
+- in API/program.cs change CreateHostBuilder(args).Build().Run() structure to create Migrations then update database, and add Default Data like Roles, languages, uploadTypes and SuperAdmin.
+- and change the ``Main`` method in ``API/program.cs`` project to **Task**
+
+---
+
 
 

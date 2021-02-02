@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Core.Models.Identity
 {
-    [Table(name: "Address")]
+    [Table(name: "Addresses")]
     public class Address
     {
         public int Id { get; set; }
