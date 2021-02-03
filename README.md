@@ -63,9 +63,13 @@ If ef command-line tool of EntityFramework not installed, Install it by this com
 - ``Swashbuckle.AspNetCore.SwaggerGen``, select last version and in **API Project**
 - ``Swashbuckle.AspNetCore.SwaggerUI``, select last version and in **API Project**
 
-## install SendGrid & Twilio tooles to send emails and SMS
+### install SendGrid & Twilio tooles to send emails and SMS
 - Install **SendGrid package** from *NuGet* , last version and in **Infrastructure project**.
 - install **Twilio package** from *NuGet*, last version in **Infrastructure project**.
+
+
+### install package to work with Files
+- ``Microsoft.AspNetCore.Http``, select last version in **Core Project**
 
 ### then:
 ```
