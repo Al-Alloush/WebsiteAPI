@@ -49,6 +49,10 @@ namespace API
                         await InitializeDefaultData.AddDefaultLanguages(services);
                         // add the SuperAdmin in first time startup this program
                         await InitializeDefaultData.AddSuperAdminUser(services);
+
+                        //-------------------
+                        // Add Seed Users to test
+                        await InitializeSeedData.AddSeedUsersData(services);
                     }
                 }
                 catch (Exception ex)
