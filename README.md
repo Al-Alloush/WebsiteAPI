@@ -168,3 +168,64 @@ add inside ``appsettings.Development.json`` file:
 ```
 then above ``app.UseEndpoints(endpoints`` inside ``startup.cs`` file add ``app.UseSwaggerDocumention(Configuration);``
 ---
+
+
+## Handling API Response, Validation, Server500, NotFound & BadRequest -Errors
+inside ErrorsHandlers
+- create BuggyController to test all Errors
+- create ``ApiResponse.cs`` to return  NotFound(), BadRequest() errors response throw it.
+
+### to handel Endpoint not found
+- create a ``ErrorController.cs`` from ``startup.cs`` redirect the error to this controller by adding:
+```
+app.UseStatusCodePagesWithReExecute("/errors/{0}");
+```
+if request commes into API Server don't have and EndPoint match that request, this middleware redirect to ``ErrorController.cs ``
+
+### handel Server Error 500
+- create ``ApiException.cs`` class inside ErrorsHandlers Folder.
+- Create ``ExceptionMiddleware.cs`` class to handel Exception in **prduction** or **development** mode  inside ErrorsHandlers Folder.
+- add in Middleware the new ``ExceptionMiddleware.cs`` instead the old one:
+```
+// handling exceptions just in developer mode.
+// if (env.IsDevelopment())
+// {
+//     app.UseDeveloperExceptionPage();
+// }
+app.UseMiddleware<ExceptionMiddleware>();
+```
+
+### Handling Error, Validation Error, override the [ApiContoller] error response behvior
+hese validation responses are typically going to be generated when the user **submitting a form** with some data on it, and some data are missed or the not right type.
+
+for that what we want to do is flatten these Errors out, that we have our status code our message, and then an array, for example:
+```
+"errors": [
+        "field (Password) is required",
+        "field (Username or Email) is required"
+],
+"statusCode": 400,
+"message": "you have made a bad request!"
+```
+
+create ApiValidationErrorResponse.cs inherent from ApiResponse then override the behavior of ``[ ApiController ]``, then inside ``startup.cs`` or inside extention file add these Service:
+```
+services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = actionContext =>
+    {
+        var errors = actionContext.ModelState
+            .Where(e => e.Value.Errors.Count > 0)
+            .SelectMany(x => x.Value.Errors)
+            .Select(x => x.ErrorMessage).ToArray();
+        var errorResponse = new ApiValidationErrorResponse
+        {
+            Errors = errors
+        };
+        return new BadRequestObjectResult(errorResponse);
+    };
+});
+```
+---
+
+

@@ -1,3 +1,4 @@
+using API.ErrorsHandlers;
 using API.Extensions.ApiServices;
 using AutoMapper;
 using Core.Helppers;
@@ -39,6 +40,8 @@ namespace API
             //
             services.AddSwaggerDocumentation(Configuration);
 
+            // override the behavior of ``[ ApiController ]`` Validation Error
+            services.OverrideApiBehaviorOptions();
 
 
         }
@@ -46,10 +49,15 @@ namespace API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            // handling exceptions just in developer mode.
+            // if (env.IsDevelopment())
+            // {
+            //     app.UseDeveloperExceptionPage();
+            // }
+            app.UseMiddleware<ExceptionMiddleware>();
+
+            // if request commes into API Server don't have and EndPoint match that request, this middleware redirect to ErrorController.cs 
+            app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
             app.UseHttpsRedirection();
 
