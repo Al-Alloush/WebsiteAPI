@@ -3,6 +3,7 @@ using API.Extensions.ApiServices;
 using AutoMapper;
 using Core.Helppers;
 using Infrastructure.Data;
+using Infrastructure.Data.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +43,9 @@ namespace API
 
             // override the behavior of ``[ ApiController ]`` Validation Error
             services.OverrideApiBehaviorOptions();
+
+            // to use EmailSmsSender Service in API project
+            services.AddScoped<EmailSmsSenderService>();
 
 
         }

@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Identity\" />
     <Folder Include="wwwroot\Uploads\Images\" />
   </ItemGroup>
 

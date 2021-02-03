@@ -16,3 +16,4 @@ namespace API.ErrorsHandlers
         // form with some data on and there could be more than one validation error.
         public IEnumerable<string> Errors { get; set; }
     }
+}
