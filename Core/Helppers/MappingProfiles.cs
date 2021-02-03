@@ -15,6 +15,10 @@ namespace Core.Helppers
             // Identity
             CreateMap<RegisterDto, AppUser>();
             CreateMap<AppUser, LoginSuccessDto>();
+            CreateMap<AppUser, UserDto>();
+            CreateMap<Address, AddressDto>();
+            CreateMap<AddressDto, Address>();
+            CreateMap<Address, AddressDto>();
 
         }
     }
