@@ -1,4 +1,5 @@
-﻿using Core.Models.Identity;
+﻿using Core.Models.Blogs;
+using Core.Models.Identity;
 using Core.Models.Settings;
 using Core.Models.Uploads;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -28,5 +29,14 @@ namespace Infrastructure.Data
         public DbSet<Upload> Upload { get; set; }
         public DbSet<UploadUserImagesList> UploadUserImagesList { get; set; }
         public DbSet<Language> Language { get; set; }
+        
+        //
+        public DbSet<BlogSourceCategoryName> BlogSourceCategoryName { get; set; }
+        public DbSet<Blog> Blog { get; set; }
+        public DbSet<BlogCategory> BlogCategory { get; set; }
+        public DbSet<BlogCategoryList> BlogCategoryList { get; set; }
+        public DbSet<BlogLike> BlogLike { get; set; }
+        public DbSet<BlogComment> BlogComment { get; set; }
+        public DbSet<UploadBlogImagesList> UploadBlogImagesList { get; set; }
     }
 }

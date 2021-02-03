@@ -49,10 +49,13 @@ namespace API
                         await InitializeDefaultData.AddDefaultLanguages(services);
                         // add the SuperAdmin in first time startup this program
                         await InitializeDefaultData.AddSuperAdminUser(services);
+                        // these default Categories able to change them leater
+                        await InitializeDefaultData.AddDefaultBlogCategories(services);
 
                         //-------------------
                         // Add Seed Users to test
                         await InitializeSeedData.AddSeedUsersData(services);
+                        await InitializeSeedData.AddSeedBlogs(services);
                     }
                 }
                 catch (Exception ex)
