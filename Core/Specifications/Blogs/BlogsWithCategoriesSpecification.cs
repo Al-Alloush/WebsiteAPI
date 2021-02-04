@@ -7,7 +7,7 @@ namespace Core.Specifications.Blogs
 {
     public class BlogsWithCategoriesSpecification : BaseSpecification<Blog>
     {
-        public BlogsWithCategoriesSpecification(string sort)
+        public BlogsWithCategoriesSpecification(string sort) : base(x=>x.Publish == true)
         {
             AddInclude(x => x.Language);
 
