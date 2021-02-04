@@ -25,7 +25,7 @@ namespace Core.Dtos.Blogs
         public DateTime ReleaseDate { get; set; }
 
         [Display(Name = "Blog's Language")]
-        public string LanguageId { get; set; }
+        public string Language { get; set; }
 
         public string DefaultBlogImage { get; set; }
 

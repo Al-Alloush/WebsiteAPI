@@ -18,8 +18,8 @@ namespace Core.Dtos.Blogs
         [Display(Name = "Body")]
         public string Body { get; set; }
 
-        [Display(Name = "Language Id")]
-        public string LanguageId { get; set; }
+        [Display(Name = "Language")]
+        public string Language { get; set; }
 
         public int LikesCount { get; set; }
         public int DislikesCount { get; set; }

@@ -1,4 +1,5 @@
 ﻿using Core.Models.Blogs;
+using Core.Specifications;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +9,7 @@ namespace Core.Interfaces.Repository
 {
     public interface IGenericBaseBlogRepository<T> where T : BaseBlogModel
     {
-        Task<IReadOnlyList<T>> GetListAllAsync();
-        Task<T> GetByIdAsync(int id);
+        Task<T> GetModelWithSpecAsync(ISpecification<T> spec);
+        Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
     }
 }

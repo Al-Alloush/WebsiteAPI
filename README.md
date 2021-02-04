@@ -247,6 +247,12 @@ and instead, we can control the data that we're returning from our database with
 And even if we've got 100 entities or three entities we still don't need to create any more additional repositories. 
 But when we do need a specific subset of data from our database, we simply create a specification and then pass that as a parameter to our list. 
 
+### after create interface and class for Generic Blog Repository, create:
+- ``ISpecification`` Interface
+- ``BaseSpecification.cs``
+- ``BlogsWithCategoriesSpecification.cs``
+
+
 
 
 ---

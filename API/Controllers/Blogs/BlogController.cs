@@ -4,6 +4,7 @@ using Core.Dtos.Blogs;
 using Core.Interfaces.Repository;
 using Core.Models.Blogs;
 using Core.Models.Identity;
+using Core.Specifications.Blogs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -39,13 +40,28 @@ namespace API.Controllers.Blogs
         [HttpGet("GetAllBlogCardList")]
         public async Task<ActionResult<List<BlogCardDto>>> GetAllBlog()
         {
-            var user = await GetCurrentUserAsync(HttpContext.User);
+            AppUser user = await GetCurrentUserAsync(HttpContext.User);
             if (user == null) return Unauthorized(new ApiResponse(401));
 
-            IReadOnlyList<Blog> blogs = await _blogRepo.GetListAllAsync();
-            var _blogs = _mapper.Map<IReadOnlyList<Blog>, IReadOnlyList< BlogCardDto>> (blogs);
+            var spec = new BlogsWithCategoriesSpecification();
+            IReadOnlyList<Blog> blogs = await _blogRepo.ListAsync(spec);
+            IReadOnlyList<BlogCardDto> _blogs = _mapper.Map<IReadOnlyList<Blog>, IReadOnlyList< BlogCardDto>> (blogs);
 
             return Ok(_blogs);
+        }
+
+        [HttpGet("GetBlogDetails")]
+        public async Task<ActionResult<BlogDto>> GetBlogDetails([FromForm] int id)
+        {
+            AppUser user = await GetCurrentUserAsync(HttpContext.User);
+            if (user == null) return Unauthorized(new ApiResponse(401));
+
+            var spec = new BlogsWithCategoriesSpecification(id);
+
+            Blog blog = await _blogRepo.GetModelWithSpecAsync(spec);
+            BlogDto _blog = _mapper.Map<Blog, BlogDto>(blog);
+
+            return Ok(_blog);
         }
 
 

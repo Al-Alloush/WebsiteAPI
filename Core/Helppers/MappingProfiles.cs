@@ -23,9 +23,12 @@ namespace Core.Helppers
             CreateMap<Address, AddressDto>();
 
             // Blogs
-            CreateMap<Blog, BlogCardDto>();
+            CreateMap<Blog, BlogCardDto>()
+                .ForMember(b => b.Language, m => m.MapFrom(l => l.Language.Name));
+            CreateMap<Blog, BlogDto>()
+                .ForMember(b => b.Language, m => m.MapFrom(l=>l.Language.Name)) ;
+
             CreateMap<BlogCardDto, Blog>();
-            CreateMap<Blog, BlogDto>();
             CreateMap<BlogDto, Blog>();
             CreateMap<BlogCreateDto, Blog>();
             CreateMap<Blog, BlogCreateDto>();
