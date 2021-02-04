@@ -252,6 +252,12 @@ But when we do need a specific subset of data from our database, we simply creat
 - ``BaseSpecification.cs``
 - ``BlogsWithCategoriesSpecification.cs``
 
+### adding the ability to sort, sorting first blogs with AtTop then sorting by Relase Date Asc/Desc
+- add inside ``ISpecification`` interface two Expressions: ``ThenOrderBy`` & ``ThenOrderByDescending``
+- Inplement these two Expressions inside ``BaseSpecification``and create two function to set their data.
+- inside ``BlogWithCategoriesSpecification.cs`` add **switch** to sort to Order data, check if sort is dateAsc or any other to add -OrderByDescenfing(AtTop).ThenBy(RelaseDate)/.ThenByDescending(RelaseDate).
+### until here we create the spisification query, now pass this specification to GenericBlogRepository
+- pass the Repository this spisification to BlogSpecificationEvaluator to exicute the query.
 
 
 

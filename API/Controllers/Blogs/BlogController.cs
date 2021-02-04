@@ -38,12 +38,13 @@ namespace API.Controllers.Blogs
         }
 
         [HttpGet("GetAllBlogCardList")]
-        public async Task<ActionResult<List<BlogCardDto>>> GetAllBlog()
+        public async Task<ActionResult<List<BlogCardDto>>> GetAllBlog([FromForm] string sort )
         {
             AppUser user = await GetCurrentUserAsync(HttpContext.User);
             if (user == null) return Unauthorized(new ApiResponse(401));
 
-            var spec = new BlogsWithCategoriesSpecification();
+            var spec = new BlogsWithCategoriesSpecification(sort);
+
             IReadOnlyList<Blog> blogs = await _blogRepo.ListAsync(spec);
             IReadOnlyList<BlogCardDto> _blogs = _mapper.Map<IReadOnlyList<Blog>, IReadOnlyList< BlogCardDto>> (blogs);
 

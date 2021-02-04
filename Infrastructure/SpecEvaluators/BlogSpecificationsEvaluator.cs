@@ -16,10 +16,16 @@ namespace Infrastructure.SpecEvaluators
             if (spec.Criteria != null)
                 query = query.Where(spec.Criteria);
 
-            
+            // to check if Order Blogs by Asc
+            if (spec.ThenOrderBy != null)
+                query = query.OrderByDescending(spec.OrderByDescending).ThenBy(spec.ThenOrderBy);
+
+            //  if not Asc then check if Order Blogs by Desc
+            if (spec.ThenOrderByDescending != null)
+                query = query.OrderByDescending(spec.OrderByDescending).ThenByDescending(spec.ThenOrderByDescending);
+
             query = spec.Includes.Aggregate(query, (current, include) => current.Include(include));
             
-
             return query;
         }
     }
