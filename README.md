@@ -231,5 +231,23 @@ services.Configure<ApiBehaviorOptions>(options =>
 });
 ```
 ---
+## Add Gineric Rrpository patern and specification patern for all Entities in Applecation
+Gineric Repository consider an Anti-pattern, to get around this proplem we use specification patern, this pattern allow as to do
+- Describes a query in an object. Instead ofjust passing an expression to defind a sync method, we could define a specification object which contains the query we want to send to that Method
+- Retuns an IQueryable<T>.
+- Generic List method takes specification as parameter.
+- Specification can have meaningful name.
 
+### how it works:
+we would create a specification and that says in our specification: we needed all of the Blogs with 'read' in the Blog's name and include the Blog Category.
+
+This specification would return and ``IQueryable<T>`` in this case if the **T** would be Blog and we passed that specification as a parameter to a method in our generic repository called for example ListAsync(), that instead of taking a generic expression it takes a specification class, and because we can name this specification with a meaningful name, this allows us to use our generic repository without needing to derive from this repository additional derived more specific repositories, 
+and instead, we can control the data that we're returning from our database with specifications.
+
+And even if we've got 100 entities or three entities we still don't need to create any more additional repositories. 
+But when we do need a specific subset of data from our database, we simply create a specification and then pass that as a parameter to our list. 
+
+
+
+---
 

@@ -8,9 +8,8 @@ using System.Text;
 namespace Core.Models.Blogs
 {
     [Table(name: "BlogComments")]
-    public class BlogComment
+    public class BlogComment : BaseBlogModel
     {
-        public int Id { get; set; }
 
         [Required(ErrorMessage = "{0} is Required")]
         public DateTime AddedDateTime { get; set; }

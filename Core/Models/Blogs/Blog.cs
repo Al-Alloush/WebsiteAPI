@@ -10,10 +10,9 @@ namespace Core.Models.Blogs
 {
 
     [Table(name: "Blogs")]
-    public class Blog
+    public class Blog : BaseBlogModel
     {
-        public int Id { get; set; }
-
+        
         [StringLength(255, ErrorMessage = "The {0} must be less than {1} and more than {2} characters.", MinimumLength = 3)]
         [Required(ErrorMessage = "{0} is Required")]
         [Display(Name = "Title")]

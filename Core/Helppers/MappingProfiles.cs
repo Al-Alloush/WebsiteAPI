@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using Core.Dtos.Blogs;
 using Core.Dtos.Identity;
+using Core.Models.Blogs;
 using Core.Models.Identity;
 using System;
 using System.Collections.Generic;
@@ -19,6 +21,22 @@ namespace Core.Helppers
             CreateMap<Address, AddressDto>();
             CreateMap<AddressDto, Address>();
             CreateMap<Address, AddressDto>();
+
+            // Blogs
+            CreateMap<Blog, BlogCardDto>();
+            CreateMap<BlogCardDto, Blog>();
+            CreateMap<Blog, BlogDto>();
+            CreateMap<BlogDto, Blog>();
+            CreateMap<BlogCreateDto, Blog>();
+            CreateMap<Blog, BlogCreateDto>();
+            CreateMap<BlogCategoryList, BlogCategoryListDto>();
+            CreateMap<BlogCategoryListDto, BlogCategoryList>();
+            CreateMap<BlogComment, BlogCommentDto>();
+            CreateMap<BlogCommentDto, BlogComment>();
+            CreateMap<BlogCategory, BlogCategoryDto>();
+            CreateMap<BlogCategoryDto, BlogCategory>();
+            CreateMap<BlogUpdateDto, Blog>();
+            CreateMap<Blog, BlogUpdateDto>();
 
         }
     }

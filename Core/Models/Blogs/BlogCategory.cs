@@ -8,9 +8,8 @@ using System.Text;
 namespace Core.Models.Blogs
 {
     [Table(name: "BlogCategories")]
-    public class BlogCategory
+    public class BlogCategory : BaseBlogModel
     {
-        public int Id { get; set; }
 
         [Required(ErrorMessage = "{0} is Required")]
         [Display(Name = "Category Name Id")]

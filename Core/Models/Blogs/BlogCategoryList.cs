@@ -7,10 +7,8 @@ using System.Text;
 namespace Core.Models.Blogs
 {
     [Table(name: "BlogCategoryList")]
-    public class BlogCategoryList
+    public class BlogCategoryList : BaseBlogModel
     {
-
-        public int Id { get; set; }
 
         [Required(ErrorMessage = "{0} is Required")]
         [Display(Name = "Category Name Id")]
