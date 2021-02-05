@@ -1,6 +1,7 @@
 ﻿using API.ErrorsHandlers;
 using AutoMapper;
 using Core.Dtos.Blogs;
+using Core.Helppers;
 using Core.Interfaces.Repository;
 using Core.Models.Blogs;
 using Core.Models.Identity;
@@ -38,12 +39,13 @@ namespace API.Controllers.Blogs
         }
 
         [HttpGet("GetAllBlogCardList")]
-        public async Task<ActionResult<List<BlogCardDto>>> GetAllBlog([FromForm] string sort )
+        public async Task<ActionResult<Pagination<BlogCardDto>>> GetAllBlog([FromForm] SpecificParameters par)
         {
             AppUser user = await GetCurrentUserAsync(HttpContext.User);
             if (user == null) return Unauthorized(new ApiResponse(401));
 
-            var spec = new BlogsWithCategoriesSpecification(sort);
+            var spec = new BlogsWithCategoriesSpecification(par);
+
 
             IReadOnlyList<Blog> blogs = await _blogRepo.ListAsync(spec);
             IReadOnlyList<BlogCardDto> _blogs = _mapper.Map<IReadOnlyList<Blog>, IReadOnlyList< BlogCardDto>> (blogs);

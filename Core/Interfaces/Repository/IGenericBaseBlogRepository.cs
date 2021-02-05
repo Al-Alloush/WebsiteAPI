@@ -11,5 +11,7 @@ namespace Core.Interfaces.Repository
     {
         Task<T> GetModelWithSpecAsync(ISpecification<T> spec);
         Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
+
+        Task<int> CountAsync(ISpecification<T> spec);
     }
 }

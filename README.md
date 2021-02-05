@@ -260,6 +260,10 @@ But when we do need a specific subset of data from our database, we simply creat
 - pass the Repository this spisification to BlogSpecificationEvaluator to exicute the query.
 
 
+create new method in IGenericRepository pass ISpecification<T>
+### add pagination.
+- inside ``ISpeciication`` add **Take, Skip and IsPagingEnabled** then in ``BaseSpecification`` add ``ApplayPaging`` method to use it inside **Specification** files like ``BlogsWithCategoriesSpecification.cs`` 
+- to count the Blogs add inside ``IGenericRepository.ca`` new methode, then implement this function inside Repositories
 
 ---
 
