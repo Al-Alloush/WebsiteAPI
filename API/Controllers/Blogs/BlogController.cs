@@ -6,6 +6,7 @@ using Core.Interfaces.Repository;
 using Core.Models.Blogs;
 using Core.Models.Identity;
 using Core.Specifications.Blogs;
+using Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -44,13 +45,19 @@ namespace API.Controllers.Blogs
             AppUser user = await GetCurrentUserAsync(HttpContext.User);
             if (user == null) return Unauthorized(new ApiResponse(401));
 
-            var spec = new BlogsWithCategoriesSpecification(par);
+            // this to get blogs by CategoryId, one to many relationships between Blog and BlogCategoriesList Tables. blog has one or more categories
+            //var blogs__  = await _context.Blog.Where(o => o.BlogCategoriesList.OrderByDescending(c => c.Id).First().BlogCategoryId == par.CategoryId).ToListAsync();
 
-
+            var spec = new BlogsCardsFiltersSpecification(par);
             IReadOnlyList<Blog> blogs = await _blogRepo.ListAsync(spec);
+
+            //// to get the count, it's the same criteria if spec
+            var blogCountSpec = new BlogsCardsFiltersCountSpecification(par);
+            int blogCount = await _blogRepo.CountAsync(blogCountSpec);
+
             IReadOnlyList<BlogCardDto> _blogs = _mapper.Map<IReadOnlyList<Blog>, IReadOnlyList< BlogCardDto>> (blogs);
 
-            return Ok(_blogs);
+            return new Pagination<BlogCardDto>(par.PageIndex, par.PageSize, blogCount, _blogs);
         }
 
         [HttpGet("GetBlogDetails")]
@@ -59,7 +66,7 @@ namespace API.Controllers.Blogs
             AppUser user = await GetCurrentUserAsync(HttpContext.User);
             if (user == null) return Unauthorized(new ApiResponse(401));
 
-            var spec = new BlogsWithCategoriesSpecification(id);
+            var spec = new BlogsCardsFiltersSpecification(id);
 
             Blog blog = await _blogRepo.GetModelWithSpecAsync(spec);
             BlogDto _blog = _mapper.Map<Blog, BlogDto>(blog);

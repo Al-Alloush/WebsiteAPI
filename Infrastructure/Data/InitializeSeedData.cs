@@ -197,10 +197,10 @@ namespace Infrastructure.Data
             var users = await context.Users.ToListAsync();
             foreach (var user in users)
             {
-                for (int n = 0; n < random.Next(0,5); n++)
+                for (int n = 0; n < 10; n++)
                 {
 
-                    for (var i = 0; i < random.Next(1, bodyAr.Length + 1); i++)
+                    for (var i = 0; i < 20; i++)
                     {
                         var randNum = random.Next(1, 100);
 
@@ -208,8 +208,8 @@ namespace Infrastructure.Data
                         var sTitle = i % 2 == 0 ? bodyDe[i].Substring(0, 30) : bodyAr[i].Substring(0, 30);
                         var body = i % 2 == 0 ? bodyDe[i] : bodyAr[i];
                         var lngId = i % 2 == 0 ? DefLanguageCodeId[2] : DefLanguageCodeId[1];
-                        var publiched = i % 3 == 1 ? true : false;
-                        var top = randNum > 97 ? false : true; // to add some of blogs  of Top of the list
+                        var publiched = random.Next(0,1000) < 990 ? true : false;
+                        var top = random.Next(0, 1000) < 2 ? true : false; // to add some of blogs  of Top of the list
 
                         // change some relaseDate
                         var daterelase = DateTime.Now;
@@ -258,6 +258,7 @@ namespace Infrastructure.Data
 
             // get blogs
             var blogs = context.Blog.Where(b => b.Publish == true).OrderByDescending(b => b.ReleaseDate).ToList();
+            // add blogs categories
             foreach (var blog in blogs)
             {
                 var catNum = random.Next(1, 4);
@@ -335,7 +336,7 @@ namespace Infrastructure.Data
             foreach (var user in users)
             {
                 // like/dislike number for this user
-                var repeatedNum = random.Next(1, blogs.Count());
+                var repeatedNum = random.Next(1, 100);
                 // to be sure the blog id is not repeated for every user
                 var blogIdsList = new List<int>();
                 for (int i = 0; i < repeatedNum; i++)

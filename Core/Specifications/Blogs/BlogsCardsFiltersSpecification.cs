@@ -2,17 +2,21 @@
 using Core.Models.Blogs;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Core.Specifications.Blogs
 {
-    public class BlogsWithCategoriesSpecification : BaseSpecification<Blog>
+    public class BlogsCardsFiltersSpecification : BaseSpecification<Blog>
     {
-        public BlogsWithCategoriesSpecification(SpecificParameters par) : base(x=> x.Publish == true)
+        public BlogsCardsFiltersSpecification(SpecificParameters par) : 
+            base( x =>  x.Publish == true  &&
+            /* filter the blogs By CategoryId, one to many relationships.
+             * use or else expression to execute the right side if condition par.CategoryId.HasValue == false, !to change value from true to false */
+            (!par.CategoryId.HasValue || x.BlogCategoriesList.OrderByDescending(c => c.Id).First().BlogCategoryId == par.CategoryId))
         {
             AddInclude(x => x.Language);
 
-           
 
             // At the beginning of the sorting, the blogs are placed to remain at the top and then sorted by date of issue
             switch (par.Sort)
@@ -31,9 +35,10 @@ namespace Core.Specifications.Blogs
             how many do we want to Skip:
             minus one here because we want start from 0, PageSize=5 (PageIndex=1 - 1)=0
             5x0=0 this is start page    */
-            //ApplyPaging(par.PageSize * (par.PageIndex - 1), par.PageSize);
+            ApplyPaging(par.PageSize * (par.PageIndex - 1), par.PageSize);
+
         }
-        public BlogsWithCategoriesSpecification(int id) : base(x=>x.Id == id)
+        public BlogsCardsFiltersSpecification(int id) : base(x => x.Id == id && x.Publish == true)
         {
             AddInclude(x => x.Language);
         }
