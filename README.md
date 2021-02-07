@@ -63,9 +63,13 @@ If ef command-line tool of EntityFramework not installed, Install it by this com
 - ``Swashbuckle.AspNetCore.SwaggerGen``, select last version and in **API Project**
 - ``Swashbuckle.AspNetCore.SwaggerUI``, select last version and in **API Project**
 
-## install SendGrid & Twilio tooles to send emails and SMS
+### install SendGrid & Twilio tooles to send emails and SMS
 - Install **SendGrid package** from *NuGet* , last version and in **Infrastructure project**.
 - install **Twilio package** from *NuGet*, last version in **Infrastructure project**.
+
+
+### install package to work with Files
+- ``Microsoft.AspNetCore.Http``, select last version in **Core Project**
 
 ### then:
 ```
@@ -227,5 +231,39 @@ services.Configure<ApiBehaviorOptions>(options =>
 });
 ```
 ---
+## Add Gineric Rrpository patern and specification patern for all Entities in Applecation
+Gineric Repository consider an Anti-pattern, to get around this proplem we use specification patern, this pattern allow as to do
+- Describes a query in an object. Instead ofjust passing an expression to defind a sync method, we could define a specification object which contains the query we want to send to that Method
+- Retuns an IQueryable<T>.
+- Generic List method takes specification as parameter.
+- Specification can have meaningful name.
 
+### how it works:
+we would create a specification and that says in our specification: we needed all of the Blogs with 'read' in the Blog's name and include the Blog Category.
+
+This specification would return and ``IQueryable<T>`` in this case if the **T** would be Blog and we passed that specification as a parameter to a method in our generic repository called for example ListAsync(), that instead of taking a generic expression it takes a specification class, and because we can name this specification with a meaningful name, this allows us to use our generic repository without needing to derive from this repository additional derived more specific repositories, 
+and instead, we can control the data that we're returning from our database with specifications.
+
+And even if we've got 100 entities or three entities we still don't need to create any more additional repositories. 
+But when we do need a specific subset of data from our database, we simply create a specification and then pass that as a parameter to our list. 
+
+### after create interface and class for Generic Blog Repository, create:
+- ``ISpecification`` Interface
+- ``BaseSpecification.cs``
+- ``BlogsWithCategoriesSpecification.cs``
+
+### adding the ability to sort, sorting first blogs with AtTop then sorting by Relase Date Asc/Desc
+- add inside ``ISpecification`` interface two Expressions: ``ThenOrderBy`` & ``ThenOrderByDescending``
+- Inplement these two Expressions inside ``BaseSpecification``and create two function to set their data.
+- inside ``BlogWithCategoriesSpecification.cs`` add **switch** to sort to Order data, check if sort is dateAsc or any other to add -OrderByDescenfing(AtTop).ThenBy(RelaseDate)/.ThenByDescending(RelaseDate).
+### until here we create the spisification query, now pass this specification to GenericBlogRepository
+- pass the Repository this spisification to BlogSpecificationEvaluator to exicute the query.
+
+
+create new method in IGenericRepository pass ISpecification<T>
+### add pagination.
+- inside ``ISpeciication`` add **Take, Skip and IsPagingEnabled** then in ``BaseSpecification`` add ``ApplayPaging`` method to use it inside **Specification** files like ``BlogsWithCategoriesSpecification.cs`` 
+- to count the Blogs add inside ``IGenericRepository.ca`` new methode, then implement this function inside Repositories
+
+---
 

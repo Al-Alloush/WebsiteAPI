@@ -1,4 +1,5 @@
-﻿using Core.Models.Identity;
+﻿using Core.Models.Blogs;
+using Core.Models.Identity;
 using Core.Models.Settings;
 using Core.Models.Uploads;
 using Microsoft.AspNetCore.Identity;
@@ -30,6 +31,14 @@ namespace Infrastructure.Data
         public static string superAdmin_id;
         public static string DefPassword = "!QA1qa";
         public static string UploadImageDir = "/Uploads/Images/";
+
+        //
+        // first add the BlogCategoryName to be the parent of all BlogCategory in any languages
+        public static string[] BlogCategorySourceNames = { "Food", "Travel", "Music", "Lifestyle", "Fitness", "Sports" };
+        public static int[] BlogCategorySourceNamesId = { 1, 2, 3, 4, 5, 6 };
+        public static string[] BlogCategoryNamesEn = { "Food", "Travel", "Music", "Lifestyle", "Fitness", "Sports" };
+        public static string[] BlogCategoryNamesDe = { "Essen", "Reise", "Musik", "Lebensstil", "Fitness", "Sport" };
+        public static string[] BlogCategoryNamesAr = { "طعام", "السفر", "موسيقى", "أسلوب الحياة", "اللياقه البدنيه", "رياضة" };
 
         //
         static CultureInfo MyCultureInfo = new CultureInfo("de-DE");
@@ -177,5 +186,56 @@ namespace Infrastructure.Data
 
         }
         // END Add SuperAdmin User -----------------------------
+
+        //**********************************************************************************************
+        public static async Task AddDefaultBlogCategories(IServiceProvider services)
+        {
+            var context = services.GetRequiredService<AppDbContext>();
+
+            for (int i = 0; i < BlogCategorySourceNames.Length; i++)
+            {
+                var name = new BlogSourceCategoryName
+                {
+                    Id = BlogCategorySourceNamesId[i],
+                    Name = BlogCategorySourceNames[i]
+                };
+                await context.BlogSourceCategoryName.AddAsync(name);
+            }
+            await context.SaveChangesAsync();
+
+            // add BlogCategoryNames with languages
+            for (int i = 0; i < BlogCategorySourceNames.Length; i++)
+            {
+                // En
+                var lEn = new BlogCategory
+                {
+                    Name = BlogCategoryNamesEn[i],
+                    SourceCategoryId = BlogCategorySourceNamesId[i],
+                    LanguageId = DefLanguageCodeId[0]
+                };
+                await context.BlogCategory.AddAsync(lEn);
+
+                // Ar
+                var lAr = new BlogCategory
+                {
+                    Name = BlogCategoryNamesAr[i],
+                    SourceCategoryId = BlogCategorySourceNamesId[i],
+                    LanguageId = DefLanguageCodeId[1]
+                };
+                await context.BlogCategory.AddAsync(lAr);
+
+                // De
+                var lDe = new BlogCategory
+                {
+                    Name = BlogCategoryNamesDe[i],
+                    SourceCategoryId = BlogCategorySourceNamesId[i],
+                    LanguageId = DefLanguageCodeId[2]
+                };
+                await context.BlogCategory.AddAsync(lDe);
+
+            }
+            await context.SaveChangesAsync();
+        }
+        // END 
     }
 }
