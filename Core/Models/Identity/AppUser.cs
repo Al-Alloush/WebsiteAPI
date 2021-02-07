@@ -16,11 +16,6 @@ namespace Core.Models.Identity
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
 
-        // this to contain the languages code, like : "ar, de, em,"
-        [Required(ErrorMessage = "{0} is Required")]
-        [Display(Name = "Selected Languages")]
-        public string SelectedLanguages { get; set; }
-
         [StringLength(50, ErrorMessage = "The {0} must be less than {1} and more than {2} characters.", MinimumLength = 3)]
         [Required(ErrorMessage = "{0} is Required")]
         [Display(Name = "Birthday")]
@@ -38,6 +33,8 @@ namespace Core.Models.Identity
 
         // each user is just going to have a single address.
         public Address Address { get; set; }
+
+        public virtual ICollection<UserSelectedLanguages> UserSelectedLanguages { get; set; }
 
     }
 }

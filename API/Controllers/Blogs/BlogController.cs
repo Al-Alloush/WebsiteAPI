@@ -28,15 +28,18 @@ namespace API.Controllers.Blogs
         private readonly UserManager<AppUser> _userManager;
         private readonly IGenericBaseBlogRepository<Blog> _blogRepo;
         private readonly IMapper _mapper;
+        private readonly AppDbContext _context;
 
         public BlogController(UserManager<AppUser> userManager, 
                                 IGenericBaseBlogRepository<Blog> blogRepo,
-                                IMapper mapper
+                                IMapper mapper,
+                                AppDbContext context
                                 )
         {
             _userManager = userManager;
             _blogRepo = blogRepo;
             _mapper = mapper;
+            _context = context;
         }
 
         [HttpGet("GetAllBlogCardList")]
@@ -44,14 +47,18 @@ namespace API.Controllers.Blogs
         {
             AppUser user = await GetCurrentUserAsync(HttpContext.User);
             if (user == null) return Unauthorized(new ApiResponse(401));
+            List<string> userLangs = await _context.UserSelectedLanguages.Where(l => l.UserId == user.Id).Select(l=>l.LanguageId).ToListAsync();
 
-            // this to get blogs by CategoryId, one to many relationships between Blog and BlogCategoriesList Tables. blog has one or more categories
-            //var blogs__  = await _context.Blog.Where(o => o.BlogCategoriesList.OrderByDescending(c => c.Id).First().BlogCategoryId == par.CategoryId).ToListAsync();
 
-            var spec = new BlogsCardsFiltersSpecification(par);
+            // this to get blogs by CategoryId, one to many relationships between Blog and BlogCategoriesList Tables. blog has one or more categories. FOT TEST
+            //var blogs = await _context.Blog.Where(o => o.BlogCategoriesList.OrderByDescending(c => c.Id).First().BlogCategoryId == par.CategoryId && userLangs.Contains(o.LanguageId)).ToListAsync();
+            //var blogCount = blogs.Count();
+            //**********************************
+
+            var spec = new BlogsCardsFiltersSpecification(par, userLangs);
             IReadOnlyList<Blog> blogs = await _blogRepo.ListAsync(spec);
 
-            //// to get the count, it's the same criteria if spec
+            // to get the count, it's the same criteria if spec
             var blogCountSpec = new BlogsCardsFiltersCountSpecification(par);
             int blogCount = await _blogRepo.CountAsync(blogCountSpec);
 

@@ -29,6 +29,7 @@ namespace Infrastructure.Data
         public DbSet<Upload> Upload { get; set; }
         public DbSet<UploadUserImagesList> UploadUserImagesList { get; set; }
         public DbSet<Language> Language { get; set; }
+        public DbSet<UserSelectedLanguages> UserSelectedLanguages { get; set; }
         
         //
         public DbSet<BlogSourceCategoryName> BlogSourceCategoryName { get; set; }

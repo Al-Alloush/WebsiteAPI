@@ -390,60 +390,60 @@ namespace API.Controllers.Identity
             return Ok($"update Email failed!");
         }
 
-        [HttpPut("UpdateSelectedLanguages")]
-        public async Task<ActionResult<string>> UpdateSelectedLanguages([FromForm] SelectedLangueagesDto langu)
-        {
-            var user = await GetCurrentUserAsync(HttpContext.User);
-            if (user == null) return Unauthorized(new ApiResponse(401));
+        //[HttpPut("UpdateSelectedLanguages")]
+        //public async Task<ActionResult<string>> UpdateSelectedLanguages([FromForm] SelectedLangueagesDto langu)
+        //{
+        //    var user = await GetCurrentUserAsync(HttpContext.User);
+        //    if (user == null) return Unauthorized(new ApiResponse(401));
 
-            // if this is the new language and in the App languages list
-            // check if this languageCode exist in App languages
-            var appLanguList = await _context.Language.Select(l => l.CodeId).ToListAsync();
-            if (!appLanguList.Contains(langu.LanguageCode))
-                return BadRequest(new ApiResponse(400, "This language not exist"));
+        //    // if this is the new language and in the App languages list
+        //    // check if this languageCode exist in App languages
+        //    var appLanguList = await _context.Language.Select(l => l.CodeId).ToListAsync();
+        //    if (!appLanguList.Contains(langu.LanguageCode))
+        //        return BadRequest(new ApiResponse(400, "This language not exist"));
 
-            // get the languages were selected from user
-            var langList = user.SelectedLanguages.Split(",").ToList();
+        //    // get the languages were selected from user
+        //    var langList = user.SelectedLanguages.Split(",").ToList();
 
-            // chaeck if this language was not selected from user before
-            if (!langList.Contains(langu.LanguageCode.Trim()))
-            {
-                // if not selected before and value is true
-                if (langu.Value == true)
-                    langList.Add(langu.LanguageCode.Trim()); // add this language
-                else
-                    return BadRequest(new ApiResponse(400, "you can't delete language not added!"));
-            } // check if this languages is selected before
-            else if (langList.Contains(langu.LanguageCode.Trim()))
-            {
-                // if selected before and value is false, that mean Delete this language
-                if (langu.Value == false)
-                {
-                    int index = langList.IndexOf(langu.LanguageCode.Trim());
-                    langList.RemoveAt(index);
-                }
-                else
-                    return BadRequest(new ApiResponse(400, "this language is already selected"));
-            }
+        //    // chaeck if this language was not selected from user before
+        //    if (!langList.Contains(langu.LanguageCode.Trim()))
+        //    {
+        //        // if not selected before and value is true
+        //        if (langu.Value == true)
+        //            langList.Add(langu.LanguageCode.Trim()); // add this language
+        //        else
+        //            return BadRequest(new ApiResponse(400, "you can't delete language not added!"));
+        //    } // check if this languages is selected before
+        //    else if (langList.Contains(langu.LanguageCode.Trim()))
+        //    {
+        //        // if selected before and value is false, that mean Delete this language
+        //        if (langu.Value == false)
+        //        {
+        //            int index = langList.IndexOf(langu.LanguageCode.Trim());
+        //            langList.RemoveAt(index);
+        //        }
+        //        else
+        //            return BadRequest(new ApiResponse(400, "this language is already selected"));
+        //    }
 
-            // add new Language in database
-            var reAddLang = "";
-            // create string of languages Cods
-            foreach (var lang in langList)
-            {
-                // to not add an empty string
-                if (!string.IsNullOrEmpty(lang))
-                    reAddLang = reAddLang + lang + ",";
-            }
-            // update the user Selected language
-            user.SelectedLanguages = reAddLang;
-            var result = await _userManager.UpdateAsync(user);
-            if (result.Succeeded)
-                return Ok($"Update {langu.LanguageCode} language successfully");
+        //    // add new Language in database
+        //    var reAddLang = "";
+        //    // create string of languages Cods
+        //    foreach (var lang in langList)
+        //    {
+        //        // to not add an empty string
+        //        if (!string.IsNullOrEmpty(lang))
+        //            reAddLang = reAddLang + lang + ",";
+        //    }
+        //    // update the user Selected language
+        //    user.SelectedLanguages = reAddLang;
+        //    var result = await _userManager.UpdateAsync(user);
+        //    if (result.Succeeded)
+        //        return Ok($"Update {langu.LanguageCode} language successfully");
 
-            // return an BadRequest and register this error in database
-            return BadRequest(new ApiResponse(400, $"Update {langu.LanguageCode} language failed!")); 
-        }
+        //    // return an BadRequest and register this error in database
+        //    return BadRequest(new ApiResponse(400, $"Update {langu.LanguageCode} language failed!")); 
+        //}
 
 
         /// <summary>

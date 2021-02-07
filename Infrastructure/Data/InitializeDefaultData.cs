@@ -122,7 +122,6 @@ namespace Infrastructure.Data
                     UserName = "Al-Alloush",
                     FirstName = "Ahmad",
                     LastName = "Alloush",
-                    SelectedLanguages = "ar,en,",
                     RegisterDate = DateTime.Now,
                     Birthday = DateTime.Parse("15/6/1978", MyCultureInfo),
                     PhoneNumber = "515885",
@@ -182,6 +181,20 @@ namespace Infrastructure.Data
                     await context.UploadUserImagesList.AddAsync(userImage);
                     await context.SaveChangesAsync();
                 }
+
+                string[] languages = { "ar", "en" };
+                // add default languages
+                for (int i = 0; i < 2; i++)
+                {
+                    var lang = new UserSelectedLanguages
+                    {
+                        UserId = superAdmin_id,
+                        LanguageId = languages[i]
+                    };
+
+                    await context.UserSelectedLanguages.AddAsync(lang);
+                }
+                await context.SaveChangesAsync();
             }
 
         }

@@ -9,11 +9,13 @@ namespace Core.Specifications.Blogs
 {
     public class BlogsCardsFiltersSpecification : BaseSpecification<Blog>
     {
-        public BlogsCardsFiltersSpecification(SpecificParameters par) : 
+        public BlogsCardsFiltersSpecification(SpecificParameters par, List<string> userLangs) : 
             base( x =>  x.Publish == true  &&
-            /* filter the blogs By CategoryId, one to many relationships.
-             * use or else expression to execute the right side if condition par.CategoryId.HasValue == false, !to change value from true to false */
-            (!par.CategoryId.HasValue || x.BlogCategoriesList.OrderByDescending(c => c.Id).First().BlogCategoryId == par.CategoryId))
+                    /* filter the blogs By CategoryId, one to many relationships.
+                    * use or else expression to execute the right side if condition par.CategoryId.HasValue == false, !to change value from true to false */
+                    (!par.CategoryId.HasValue || x.BlogCategoriesList.OrderByDescending(c => c.Id).First().BlogCategoryId == par.CategoryId) &&
+                    userLangs.Contains(x.LanguageId)
+                )
         {
             AddInclude(x => x.Language);
 
