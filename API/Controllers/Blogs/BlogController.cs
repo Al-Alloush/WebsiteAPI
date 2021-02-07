@@ -59,7 +59,7 @@ namespace API.Controllers.Blogs
             IReadOnlyList<Blog> blogs = await _blogRepo.ListAsync(spec);
 
             // to get the count, it's the same criteria if spec
-            var blogCountSpec = new BlogsCardsFiltersCountSpecification(par);
+            var blogCountSpec = new BlogsCardsFiltersCountSpecification(par, userLangs);
             int blogCount = await _blogRepo.CountAsync(blogCountSpec);
 
             IReadOnlyList<BlogCardDto> _blogs = _mapper.Map<IReadOnlyList<Blog>, IReadOnlyList< BlogCardDto>> (blogs);
