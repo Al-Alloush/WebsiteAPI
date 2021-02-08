@@ -127,13 +127,12 @@ namespace API.Controllers.Identity
                 foreach (var _user in userData)
                 {
                     IQueryable<UserImagesDto> images = from ui in _context.UploadUserImagesList
-                                                       join up in _context.Upload on ui.UploadId equals up.Id
                                                        join typ in _context.UploadType on ui.UploadTypeId equals typ.Id
                                                        where ui.UserId == _user.Id && ui.Default == true
                                                        select new UserImagesDto
                                                        {
                                                            Id = ui.Id,
-                                                           Path = url + up.Path,
+                                                           Path = url + ui.Path,
                                                            Type = typ.Name,
                                                            Default = ui.Default
                                                        };

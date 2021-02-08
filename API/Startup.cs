@@ -49,8 +49,8 @@ namespace API
             // to use EmailSmsSender Service in API project
             services.AddScoped<EmailSmsSenderService>();
 
-            // add Generic Repository
-            services.AddScoped(typeof(IGenericBaseBlogRepository<>), typeof(GenericBaseBlogRepository<>));
+            // add all Repositories:
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>)); 
 
         }
 

@@ -34,7 +34,6 @@ namespace Infrastructure.Data
                 var name = "visitor";
                 var role = "Visitor";
                 var AuPass = false;
-                var lang = "de,";
 
                 if (i >= 20 && i < 25)
                 {
@@ -55,15 +54,6 @@ namespace Infrastructure.Data
                 {
                     Confirmed = false;
                 }
-
-                if (i % 2 == 0)
-                    lang = "de,ar,";
-
-                if (i % 7 == 0)
-                    lang = "ar,";
-
-                if (i % 8 == 1)
-                    lang = "en,fr,";
 
                 var userS = new AppUser
                 {
@@ -95,32 +85,20 @@ namespace Infrastructure.Data
             var users = await context.Users.ToArrayAsync();
             for (int i = 1; i < users.Length; i++)
             {
+
                 var imgNum = random.Next(1, 52);
-                var upload = new Upload
-                {
-                    Name = "user (" + imgNum + "): " + random.Next(1, 100000),
-                    Path = "/Uploads/Images/user (" + imgNum + ").jpg",
-                    AddedDateTime = DateTime.Now,
-                    UserId = users[i].Id
-                };
-                await context.Upload.AddAsync(upload);
-                await context.SaveChangesAsync();
-            }
-
-            for (int i = 1; i < users.Length; i++)
-            {
-                var userUploads = await context.Upload.FirstOrDefaultAsync(u => u.UserId == users[i].Id);
-
                 var userImage = new UploadUserImagesList
                 {
-                    UploadId = userUploads.Id,
+
+                    Name = "user (" + imgNum + "): " + random.Next(1, 100000),
+                    Path = "/Uploads/Images/user (" + imgNum + ").jpg",
                     UserId = users[i].Id,
                     Default = true,
                     UploadTypeId = 1
                 };
                 await context.UploadUserImagesList.AddAsync(userImage);
-                await context.SaveChangesAsync();
             }
+            await context.SaveChangesAsync();
 
             // 
             for (int iu = 0; iu < users.Length; iu++)
@@ -139,12 +117,6 @@ namespace Infrastructure.Data
                 }
                 await context.SaveChangesAsync();
             }
-        }
-
-        public class BlogUploads
-        {
-            public int BlogId { get; set; }
-            public int UploadId { get; set; }
         }
 
         private static string[] bodyEn =
@@ -309,7 +281,9 @@ namespace Infrastructure.Data
                             ReleaseDate = daterelase,
                             LanguageId = lngId,
                             UserId = user.Id,
-                            AddedDateTime = DateTime.Now
+                            UserModifiedId = user.Id,
+                            AddedDateTime = DateTime.Now,
+                            ModifiedDate = DateTime.Now
                         };
                         context.Blog.Add(newBlog);
                     }
@@ -343,62 +317,36 @@ namespace Infrastructure.Data
             }
             await context.SaveChangesAsync();
 
-            // Add Blogs Images, every blog has from 1 to 3 images
-            var blogUpload = new List<BlogUploads>();
-            int uploadId = 1000;
+            // add Blog images
             foreach (var blog in blogs)
             {
                 var indexImage = random.Next(1, 52);
                 var repNumber = random.Next(1, 4);
+                var defaultImage = true;
                 for (int rep = 1; rep <= repNumber; rep++)
                 {
-                    var upload = new Upload
+
+                    var blogImage = new UploadBlogImagesList
                     {
-                        Id = uploadId,
                         Name = "img (" + indexImage + "_" + rep + ")",
                         Path = "/Uploads/Images/img (" + indexImage + ").jfif",
-                        AddedDateTime = DateTime.Now,
-                        UserId = blog.UserId
-                    };
-                    await context.Upload.AddAsync(upload);
-                    uploadId++;
-                    var saveBlogUplad = new BlogUploads
-                    {
                         BlogId = blog.Id,
-                        UploadId = upload.Id
+                        Default = defaultImage,
+                        UserId = blog.UserId,
+                        UploadTypeId = 3
                     };
-                    blogUpload.Add(saveBlogUplad);
+                    defaultImage = false;
+                    await context.UploadBlogImagesList.AddAsync(blogImage);
                 }
-            }
-            //await context.SaveChangesAsync();
-
-            // add images data in UploadBlogImagesList table
-            var defaultImage = true;
-            int blogId = 0;
-            foreach (var item in blogUpload)
-            {
-                if (item.BlogId != blogId)
-                    defaultImage = true;
-
-                var blogImage = new UploadBlogImagesList
-                {
-                    UploadId = item.UploadId,
-                    BlogId = item.BlogId,
-                    Default = defaultImage,
-                    UploadTypeId = 3
-                };
-                blogId = item.BlogId;
-                defaultImage = false;
-
-                await context.UploadBlogImagesList.AddAsync(blogImage);
+               
             }
             await context.SaveChangesAsync();
 
-
+            // add like and dislike
             foreach (var user in users)
             {
                 // like/dislike number for this user
-                var repeatedNum = random.Next(1, 100);
+                var repeatedNum = random.Next(1, blogs.Count()/3);
                 // to be sure the blog id is not repeated for every user
                 var blogIdsList = new List<int>();
                 for (int i = 0; i < repeatedNum; i++)
@@ -410,7 +358,7 @@ namespace Infrastructure.Data
                     // if this blog not selected before
                     if (!blogIdsList.Contains(randomBlog.Id))
                     {
-                        if (random.Next(1, 5) < 2)
+                        if (random.Next(0, 6) < 3)
                         {
                             like = false;
                             dislike = true;

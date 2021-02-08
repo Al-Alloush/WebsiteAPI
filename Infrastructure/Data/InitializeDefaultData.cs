@@ -161,19 +161,10 @@ namespace Infrastructure.Data
                         def = false;
                     }
 
-                    var upload = new Upload
+                    var userImage = new UploadUserImagesList
                     {
                         Name = imgName[i],
                         Path = UploadImageDir + imgName[i] + ".jpg",
-                        AddedDateTime = DateTime.Now,
-                        UserId = superAdmin_id
-                    };
-                    await context.Upload.AddAsync(upload);
-                    await context.SaveChangesAsync();
-
-                    var userImage = new UploadUserImagesList
-                    {
-                        UploadId = upload.Id,
                         UserId = superAdmin_id,
                         Default = def,
                         UploadTypeId = typ

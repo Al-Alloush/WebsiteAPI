@@ -1,5 +1,4 @@
 ﻿using Core.Interfaces.Repository;
-using Core.Models.Blogs;
 using Core.Specifications;
 using Infrastructure.Data;
 using Infrastructure.SpecEvaluators;
@@ -12,16 +11,17 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class GenericBaseBlogRepository<T> : IGenericBaseBlogRepository<T> where T : BaseBlogModel
+    public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         private readonly AppDbContext _context;
 
-        public GenericBaseBlogRepository(AppDbContext context)
+        public GenericRepository(AppDbContext context)
         {
             _context = context;
         }
 
-        public async Task<T> GetModelWithSpecAsync(ISpecification<T> spec)
+
+        public async Task<T> ModelDetailsAsync(ISpecification<T> spec)
         {
             return await ApplySpecification(spec).FirstOrDefaultAsync();
         }
@@ -37,8 +37,7 @@ namespace Infrastructure.Repositories
 
         private IQueryable<T> ApplySpecification(ISpecification<T> spec)
         {
-            return BlogSpecificationsEvaluator<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
+            return SpecificationsEvaluator<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
         }
-
     }
 }

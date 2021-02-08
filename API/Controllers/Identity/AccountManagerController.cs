@@ -69,13 +69,12 @@ namespace API.Controllers.Identity
             var url = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}";
             // get all user's images
             IQueryable<UserImagesDto> images = from ui in _context.UploadUserImagesList
-                                               join up in _context.Upload on ui.UploadId equals up.Id
                                                join typ in _context.UploadType on ui.UploadTypeId equals typ.Id
                                                where ui.UserId == user.Id && ui.Default == true
                                                select new UserImagesDto
                                                {
                                                    Id = ui.Id,
-                                                   Path = url + up.Path,
+                                                   Path = url + ui.Path,
                                                    Type = typ.Name,
                                                    Default = ui.Default
                                                };
@@ -145,16 +144,6 @@ namespace API.Controllers.Identity
                     // Clears buffers for this stream and causes any buffered data to be written to the file.
                     fileStream.Flush();
 
-                    var upload = new Upload
-                    {
-                        Name = fileName,
-                        Path = USER_IMAGE_DIRECTORY + fileName,
-                        AddedDateTime = DateTime.Now,
-                        UserId = user.Id
-                    };
-                    await _context.Upload.AddAsync(upload);
-                    await _context.SaveChangesAsync();
-
                     // change the old default image to false and set new one
                     var defaultImage = await _context.UploadUserImagesList.Where(g => g.UserId == user.Id && g.Default == true && g.UploadTypeId == typeId).FirstOrDefaultAsync();
                     defaultImage.Default = false;
@@ -164,7 +153,8 @@ namespace API.Controllers.Identity
                     // set the new image
                     var userImage = new UploadUserImagesList
                     {
-                        UploadId = upload.Id,
+                        Name = fileName,
+                        Path = USER_IMAGE_DIRECTORY + fileName,
                         UserId = user.Id,
                         UploadTypeId = typeId,
                         Default = true
@@ -217,14 +207,10 @@ namespace API.Controllers.Identity
             var image = await _context.UploadUserImagesList.FirstOrDefaultAsync(i => i.Id == imageId && i.UserId == user.Id);
             if (image == null) return NotFound(new ApiResponse(404, "no image to delete"));
 
-            // check if upload existing
-            var upload = await _context.Upload.FindAsync(image.UploadId);
-            if (upload == null) return NotFound(new ApiResponse(404, "no image to delete"));
-
-            _context.Remove(upload);
+            _context.Remove(image);
             await _context.SaveChangesAsync();
             // delete Image file from server
-            System.IO.File.Delete(_webHostEnvironment.WebRootPath + upload.Path);
+            System.IO.File.Delete(_webHostEnvironment.WebRootPath + image.Path);
             return Ok(new ApiResponse(201)); // Successfully Delete Image
         }
 

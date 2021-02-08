@@ -1,5 +1,6 @@
 ﻿using Core.Models.Identity;
 using Core.Models.Settings;
+using Core.Models.Uploads;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -51,10 +52,18 @@ namespace Core.Models.Blogs
         public virtual AppUser User { get; set; }
 
         public DateTime AddedDateTime { get; set; }
+        public DateTime ModifiedDate { get; set; }
+
+        [Required(ErrorMessage = "{0} is Required")]
+        [Display(Name = "User who modified")]
+        public string UserModifiedId { get; set; }
+        public virtual AppUser UserModified { get; set; }
 
         public virtual ICollection<BlogCategoryList> BlogCategoriesList { get; set; }
 
         public virtual ICollection<BlogComment> BlogComments { get; set; }
+        public virtual ICollection<UploadBlogImagesList> UploadBlogImagesList { get; set; }
+
     }
 }
 

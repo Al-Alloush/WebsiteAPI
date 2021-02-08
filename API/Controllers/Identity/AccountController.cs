@@ -142,12 +142,11 @@ namespace API.Controllers.Identity
             var url = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}";
             // get user's profile and cover images 
             IQueryable<UserImagesDto> images = from ui in _context.UploadUserImagesList
-                                               join up in _context.Upload on ui.UploadId equals up.Id
                                                join typ in _context.UploadType on ui.UploadTypeId equals typ.Id
                                                where ui.UserId == user.Id && (ui.UploadTypeId == 1 || ui.UploadTypeId == 2) && ui.Default == true
                                                select new UserImagesDto
                                                {
-                                                   Path = url + up.Path,
+                                                   Path = url + ui.Path,
                                                    Type = typ.Name,
                                                    Default = ui.Default
                                                };

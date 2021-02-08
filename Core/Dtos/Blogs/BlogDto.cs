@@ -25,9 +25,9 @@ namespace Core.Dtos.Blogs
         public int DislikesCount { get; set; }
         public int CommentsCount { get; set; }
 
-        public List<BlogImageDto> BlogImagesList { get; set; }
-        public List<BlogCategoryListDto> BlogCategoriesList { get; set; }
-        public List<BlogCommentDto> BlogComments { get; set; }
+        public IReadOnlyList<BlogImageDto> BlogImagesList { get; set; }
+        public IReadOnlyList<BlogCategoryListDto> BlogCategoriesList { get; set; }
+        public IReadOnlyList<BlogCommentDto> BlogComments { get; set; }
 
 
     }
