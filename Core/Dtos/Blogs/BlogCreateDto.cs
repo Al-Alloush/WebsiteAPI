@@ -45,6 +45,6 @@ namespace Core.Dtos.Blogs
 
         public string Categories { get; set; }
 
-        public List<IFormFile> Files { get; set; }
+        public IReadOnlyList<IFormFile> Files { get; set; }
     }
 }

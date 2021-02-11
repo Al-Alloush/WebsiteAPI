@@ -9,6 +9,7 @@ using Core.Models.Uploads;
 using Core.Specifications.Blogs;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,8 @@ namespace API.Controllers.Blogs
     [Authorize]
     public class BlogController : ControllerBase
     {
+        private const string BLOG_IMAGE_DIRECTORY = "/Uploads/Images/";
+
         private readonly UserManager<AppUser> _userManager;
         private readonly IGenericRepository<Blog> _blogRepo;
         private readonly IGenericRepository<UploadBlogImagesList> _uploadImageRepo;
@@ -36,6 +39,7 @@ namespace API.Controllers.Blogs
         private readonly IGenericRepository<BlogCategory> _blogCategoryRepo;
         private readonly IMapper _mapper;
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public BlogController(UserManager<AppUser> userManager,
                                 IGenericRepository<Blog> blogRepo,
@@ -46,7 +50,8 @@ namespace API.Controllers.Blogs
                                 IGenericRepository<BlogCategoryList> blogCategoryListRepo,
                                 IGenericRepository<BlogCategory> blogCategoryRepo,
                                 IMapper mapper,
-                                AppDbContext context
+                                AppDbContext context,
+                                IWebHostEnvironment webHostEnvironment
                                 )
         {
             _userManager = userManager;
@@ -59,6 +64,7 @@ namespace API.Controllers.Blogs
             _blogCategoryRepo = blogCategoryRepo;
             _mapper = mapper;
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet("GetAllBlogCardList")]
@@ -108,6 +114,9 @@ namespace API.Controllers.Blogs
         {
             // get Blog Details
             var blog = await _blogRepo.ModelDetailsAsync(new GetBlogsListPaginationOrBlogDetailsSpeci(id));
+            if(blog == null)
+                return NotFound(new ApiResponse(404, "this Blog not exist!"));
+
             var _blog = _mapper.Map<Blog, BlogDto>(blog);
 
             // add all comments for this blog & count Blog's comments
@@ -173,16 +182,67 @@ namespace API.Controllers.Blogs
                         {
                             // if not success create of any Blog's Categories, delete new Blog
                             await _blogRepo.RemoveAsync(newBlog);
-                            await _blogCategoryListRepo.SaveChangesAsync();
-                            return Ok("Something Wrong! with Creating Categories");
+                            await _blogRepo.SaveChangesAsync();
+                            return BadRequest(new ApiResponse(400, "Something Wrong! with Creating Categories"));
                         }
                     }
+                    // ************************************* add blog images
+                    // the first image is Default
+                    bool defaultImage = true;
+                    if(blog.Files !=null)
+                    {
+                        if (blog.Files.Count > 0 && blog.Files.Count < 6)
+                        {
+                            List<string> uploadedFilesPath = new List<string>(); 
+                            foreach (var file in blog.Files)
+                            {
+                                if (file != null && file.Length > 0)
+                                {
+                                    // upload the image and return the new file name
+                                    var fileName = await _uploadImageRepo.UploadFileAsync(file, _webHostEnvironment.WebRootPath + BLOG_IMAGE_DIRECTORY);
+                                    if (!string.IsNullOrEmpty(fileName))
+                                    {
+                                        var blogImage = new UploadBlogImagesList
+                                        {
+                                            Name = fileName,
+                                            Path = BLOG_IMAGE_DIRECTORY + fileName,
+                                            BlogId = newBlog.Id,
+                                            Default = defaultImage,
+                                            UserId = user.Id,
+                                            UploadTypeId = 3 // Blog type
+                                        };
+                                        // first image is default
+                                        defaultImage = false;
+
+                                        // to delete these files from the server if not successful to add the Blog
+                                        uploadedFilesPath.Add(BLOG_IMAGE_DIRECTORY + fileName);
+
+                                        // add BlogImagesList Model
+                                        if (!await _uploadImageRepo.AddAsync(blogImage))
+                                        {
+                                            // if not success add of any Blog's images, delete the new Blog with all uploadded images in server
+                                            await _blogRepo.RemoveAsync(newBlog);
+                                            await _blogRepo.SaveChangesAsync();
+                                            foreach (var filePath in uploadedFilesPath)
+                                                await _uploadImageRepo.DeleteFilesFromServerAsync(_webHostEnvironment.WebRootPath + filePath);
+
+                                            return BadRequest( new ApiResponse(400, "Something Wrong! with update uploadBlogImageslist images"));
+                                        }
+                                    }
+                                    else
+                                        return BadRequest(new ApiResponse(400, "Something Wrong! with Upload images"));
+                                }
+                            }
+                        }
+                        else
+                            return BadRequest(new ApiResponse(400, "The maximum number of photos is 5"));
+                    }
+                    // update database after add all images and Categories
                     await _blogCategoryListRepo.SaveChangesAsync();
                     return Ok("Add Blog successfully");
                 }
             }
-
-            return Ok("Something Wrong!");
+            return BadRequest(new ApiResponse(400, "Something Wrong! with add new Blog"));
         }
 
         /// <summary>

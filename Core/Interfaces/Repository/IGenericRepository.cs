@@ -1,4 +1,5 @@
 ﻿using Core.Specifications;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,5 +18,9 @@ namespace Core.Interfaces.Repository
         Task<bool> SaveChangesAsync();
 
         Task<bool> RemoveAsync(T model);
+
+        Task<string>  UploadFileAsync(IFormFile file, string fileDirPath);
+
+        Task<bool> DeleteFilesFromServerAsync(string filePath);
     }
 }
