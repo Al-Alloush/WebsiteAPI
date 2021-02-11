@@ -31,6 +31,9 @@ namespace API.Controllers.Blogs
         private readonly IGenericRepository<UploadBlogImagesList> _uploadImageRepo;
         private readonly IGenericRepository<BlogComment> _commentRepo;
         private readonly IGenericRepository<BlogLike> _likeRepo;
+        private readonly IGenericRepository<BlogSourceCategoryName> _blogSourceCategoryRepo;
+        private readonly IGenericRepository<BlogCategoryList> _blogCategoryListRepo;
+        private readonly IGenericRepository<BlogCategory> _blogCategoryRepo;
         private readonly IMapper _mapper;
         private readonly AppDbContext _context;
 
@@ -39,6 +42,9 @@ namespace API.Controllers.Blogs
                                 IGenericRepository<UploadBlogImagesList> uploadImageRepo,
                                 IGenericRepository<BlogComment> commentRepo,
                                 IGenericRepository<BlogLike> likeRepo,
+                                IGenericRepository<BlogSourceCategoryName> blogSourceCategoryRepo,
+                                IGenericRepository<BlogCategoryList> blogCategoryListRepo,
+                                IGenericRepository<BlogCategory> blogCategoryRepo,
                                 IMapper mapper,
                                 AppDbContext context
                                 )
@@ -48,6 +54,9 @@ namespace API.Controllers.Blogs
             _uploadImageRepo = uploadImageRepo;
             _commentRepo = commentRepo;
             _likeRepo = likeRepo;
+            _blogSourceCategoryRepo = blogSourceCategoryRepo;
+            _blogCategoryListRepo = blogCategoryListRepo;
+            _blogCategoryRepo = blogCategoryRepo;
             _mapper = mapper;
             _context = context;
         }
@@ -66,58 +75,115 @@ namespace API.Controllers.Blogs
             //var blogCount = blogs.Count();
             //**********************************
 
-            var spec = new GetBlogsListPaginationOrBlogDetailsSpeci(par, userLangs);
-            var blogs = await _blogRepo.ListAsync(spec);
-
+            // query all blogs with pagination tools
+            IReadOnlyList<Blog> blogs = await _blogRepo.ListAsync(new GetBlogsListPaginationOrBlogDetailsSpeci(par, userLangs));
             // to get the count, it's the same criteria if spec
-            var blogCountSpec = new GetBlogsListPaginationOrBlogDetailsSpeci(par, userLangs, emptyConstructor:true);
-            int blogsCount = await _blogRepo.CountAsync(blogCountSpec);
+            int blogsCount = await _blogRepo.CountAsync( new GetBlogsListPaginationOrBlogDetailsSpeci(par, userLangs, emptyConstructor:true));
 
-            var _blogs = _mapper.Map<IReadOnlyList<Blog>, IReadOnlyList< BlogCardDto>> (blogs);
-
+            // mapping from Blog -> BlogCardDto
+            IReadOnlyList<BlogCardDto> _blogs = _mapper.Map<IReadOnlyList<Blog>, IReadOnlyList< BlogCardDto>> (blogs);
+            
+            // looping to add some data
             foreach (var blog in _blogs)
             {
-                // add default image in card
-                var imagesList = await _uploadImageRepo.ModelDetailsAsync(new getBlogImagesListOrDefaultImageSpeci(blog.Id));
-                blog.DefaultBlogImage = imagesList.Path;
+                // add default image in BlogCard
+                UploadBlogImagesList imagesList = await _uploadImageRepo.ModelDetailsAsync(new getBlogImagesListOrDefaultImageSpeci(blog.Id));
+                if(imagesList != null )
+                    blog.DefaultBlogImage = imagesList.Path;
 
-                // count the comments
+                // count Blog's comments
                 blog.CommentsCount = await _commentRepo.CountAsync(new GetBlogCommentsSpeci(blog.Id));
-                //count the like
+                //count Blog's Like
                 blog.LikesCount = await _likeRepo.CountAsync(new CountLikeBlogSpeci(blog.Id, like:true));
-                //count the dislike
+                //count Blog's Dislike
                 blog.DislikesCount = await _likeRepo.CountAsync(new CountLikeBlogSpeci(blog.Id, like:false));
             }
 
+            // return using pagination tools
             return new Pagination<BlogCardDto>(par.PageIndex, par.PageSize, blogsCount, _blogs);
         }
 
         [HttpGet("GetBlogDetails")]
         public async Task<ActionResult<BlogDto>> GetBlogDetails([FromForm] int id)
         {
-            
-            var spec = new GetBlogsListPaginationOrBlogDetailsSpeci(id);
-
-            var blog = await _blogRepo.ModelDetailsAsync(spec);
+            // get Blog Details
+            var blog = await _blogRepo.ModelDetailsAsync(new GetBlogsListPaginationOrBlogDetailsSpeci(id));
             var _blog = _mapper.Map<Blog, BlogDto>(blog);
-            // count the comments
-            _blog.CommentsCount = await _commentRepo.CountAsync(new GetBlogCommentsSpeci(blog.Id));
-            //count the like
+
+            // add all comments for this blog & count Blog's comments
+            var comments = await _commentRepo.ListAsync(new GetBlogCommentsSpeci(_blog.Id));
+            _blog.BlogComments = _mapper.Map<IReadOnlyList<BlogComment>, IReadOnlyList<BlogCommentDto>>(comments);
+            _blog.CommentsCount = _blog.BlogComments.Count();
+
+            //count the like and Dislike
             _blog.LikesCount = await _likeRepo.CountAsync(new CountLikeBlogSpeci(blog.Id, like:true));
-            //count the dislike
             _blog.DislikesCount = await _likeRepo.CountAsync(new CountLikeBlogSpeci(blog.Id, like:false));
 
-            // add all comment for this blog
-            var comments= await _commentRepo.ListAsync(new GetBlogCommentsSpeci(_blog.Id));
-            _blog.BlogComments = _mapper.Map<IReadOnlyList<BlogComment>, IReadOnlyList<BlogCommentDto>>(comments);
+            // Get all the categories for this blog
+            IReadOnlyList<BlogCategoryList> categories = await _blogCategoryListRepo.ListAsync(new GetBlogCategoriesListSpeci(_blog.Id));
+            _blog.BlogCategoriesList = _mapper.Map<IReadOnlyList<BlogCategoryList>, IReadOnlyList<BlogCategoryListDto>>(categories);
+            //  and get their names in the blog language
+            foreach (var cat in _blog.BlogCategoriesList)
+                cat.Name = (await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoryNameSpeci(cat.BlogCategoryId, blog.LanguageId))).Name;
 
-            // get Blogs images;
+            // get Blog's images;
             IReadOnlyList<UploadBlogImagesList> imagesList = await _uploadImageRepo.ListAsync(new getBlogImagesListOrDefaultImageSpeci(_blog.Id, defaultImg: true)) ;
             _blog.BlogImagesList = _mapper.Map<IReadOnlyList<UploadBlogImagesList>, IReadOnlyList<BlogImageDto>>(imagesList);
 
+            
             return Ok(_blog);
         }
 
+
+        [Authorize(Roles = "SuperAdmin, Admin, Editor")]
+        // Post: Create a Blog
+        [HttpPost("CreateBlog")]
+        public async Task<ActionResult<string>> CreateBlog([FromForm] BlogCreateDto blog)
+        {
+            var user = await GetCurrentUserAsync(HttpContext.User);
+            if (user == null) return Unauthorized(new ApiResponse(401));
+
+            //check id category existing, example: Convert string "[1, 2, 3]" to int list
+            List<int> _categoriesIds = blog.Categories.Trim('[', ']').Split(',').Select(int.Parse).ToList();
+            foreach (var id in _categoriesIds)
+            {
+                // check if this Category existing in Category Source
+                var categorySource = await _blogSourceCategoryRepo.ModelDetailsAsync(new GetBlogSourceCategories(id));
+                if (categorySource == null) 
+                    return NotFound(new ApiResponse(404, "Category Id:" + id + ", Not exist!"));
+            }
+
+            // mapping form BlogCreateDto -> Blog to add it in databse
+            Blog newBlog = _mapper.Map<BlogCreateDto, Blog>(blog);
+            newBlog.UserId = user.Id;
+            newBlog.AddedDateTime = DateTime.Now;
+            newBlog.UserModifiedId = user.Id;
+            newBlog.ModifiedDate = DateTime.Now;
+
+            if (await _blogRepo.AddAsync(newBlog))
+            {
+                if (await _blogRepo.SaveChangesAsync())
+                {
+                    // Add categories for this Blog
+                    foreach (var id in _categoriesIds)
+                    {
+                        // add new Category
+                        var newCat = new BlogCategoryList { BlogId = newBlog.Id, BlogCategoryId = id };
+                        if (! await _blogCategoryListRepo.AddAsync(newCat))
+                        {
+                            // if not success create of any Blog's Categories, delete new Blog
+                            await _blogRepo.RemoveAsync(newBlog);
+                            await _blogCategoryListRepo.SaveChangesAsync();
+                            return Ok("Something Wrong! with Creating Categories");
+                        }
+                    }
+                    await _blogCategoryListRepo.SaveChangesAsync();
+                    return Ok("Add Blog successfully");
+                }
+            }
+
+            return Ok("Something Wrong!");
+        }
 
         /// <summary>
         /// Inside WebToken there is an Email, from this email Get User from user associated on controller and HttpContext absract class.

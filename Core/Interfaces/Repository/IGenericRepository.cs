@@ -11,5 +11,11 @@ namespace Core.Interfaces.Repository
         Task<T> ModelDetailsAsync(ISpecification<T> spec);
         Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
         Task<int> CountAsync(ISpecification<T> spec);
+
+        Task<bool> AddAsync(T model);
+
+        Task<bool> SaveChangesAsync();
+
+        Task<bool> RemoveAsync(T model);
     }
 }
