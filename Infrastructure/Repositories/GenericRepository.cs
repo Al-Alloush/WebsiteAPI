@@ -109,5 +109,19 @@ namespace Infrastructure.Repositories
                 return false;
             }
         }
+
+        public async Task<bool> UpdateAsync(T model)
+        {
+            try
+            {
+                _context.Set<T>().Attach(model);
+                _context.Entry(model).State = EntityState.Modified;
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }

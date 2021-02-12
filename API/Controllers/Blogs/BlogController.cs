@@ -70,9 +70,9 @@ namespace API.Controllers.Blogs
         [HttpGet("GetAllBlogCardList")]
         public async Task<ActionResult<Pagination<BlogCardDto>>> GetAllBlog([FromForm] SpecificParameters par)
         {
-            var user = await GetCurrentUserAsync(HttpContext.User);
-            if (user == null) return Unauthorized(new ApiResponse(401));
-            var userLangs = await _context.UserSelectedLanguages.Where(l => l.UserId == user.Id).Select(l=>l.LanguageId).ToListAsync();
+            var currentUser = await GetCurrentUserAsync(HttpContext.User);
+            if (currentUser == null) return Unauthorized(new ApiResponse(401));
+            var userLangs = await _context.UserSelectedLanguages.Where(l => l.UserId == currentUser.Id).Select(l=>l.LanguageId).ToListAsync();
 
 
             // this to get blogs by CategoryId, one to many relationships between Blog and BlogCategoriesList Tables. blog has one or more categories. FOR TEST
@@ -143,30 +143,25 @@ namespace API.Controllers.Blogs
             return Ok(_blog);
         }
 
-
+        
         [Authorize(Roles = "SuperAdmin, Admin, Editor")]
         // Post: Create a Blog
         [HttpPost("CreateBlog")]
         public async Task<ActionResult<string>> CreateBlog([FromForm] BlogCreateDto blog)
         {
-            var user = await GetCurrentUserAsync(HttpContext.User);
-            if (user == null) return Unauthorized(new ApiResponse(401));
+            var currentUser = await GetCurrentUserAsync(HttpContext.User);
+            if (currentUser == null) return Unauthorized(new ApiResponse(401));
 
-            //check id category existing, example: Convert string "[1, 2, 3]" to int list
-            List<int> _categoriesIds = blog.Categories.Trim('[', ']').Split(',').Select(int.Parse).ToList();
-            foreach (var id in _categoriesIds)
-            {
-                // check if this Category existing in Category Source
-                var categorySource = await _blogSourceCategoryRepo.ModelDetailsAsync(new GetBlogSourceCategories(id));
-                if (categorySource == null) 
-                    return NotFound(new ApiResponse(404, "Category Id:" + id + ", Not exist!"));
-            }
+            //check if all categories are existing, 
+            var _categoriesIds = await CheckExistingCategories(blog.Categories);
+            if (_categoriesIds == null)
+                return NotFound(new ApiResponse(404, "some Categories not exist!"));
 
             // mapping form BlogCreateDto -> Blog to add it in databse
             Blog newBlog = _mapper.Map<BlogCreateDto, Blog>(blog);
-            newBlog.UserId = user.Id;
+            newBlog.UserId = currentUser.Id;
             newBlog.AddedDateTime = DateTime.Now;
-            newBlog.UserModifiedId = user.Id;
+            newBlog.UserModifiedId = currentUser.Id;
             newBlog.ModifiedDate = DateTime.Now;
 
             if (await _blogRepo.AddAsync(newBlog))
@@ -208,7 +203,7 @@ namespace API.Controllers.Blogs
                                             Path = BLOG_IMAGE_DIRECTORY + fileName,
                                             BlogId = newBlog.Id,
                                             Default = defaultImage,
-                                            UserId = user.Id,
+                                            UserId = currentUser.Id,
                                             UploadTypeId = 3 // Blog type
                                         };
                                         // first image is default
@@ -244,6 +239,122 @@ namespace API.Controllers.Blogs
             }
             return BadRequest(new ApiResponse(400, "Something Wrong! with add new Blog"));
         }
+
+
+        [Authorize(Roles = "SuperAdmin, Admin, Editor")]
+        // Put: update the Blog
+        [HttpPut("UpdateBlog")]
+        public async Task<ActionResult<string>> UpdateBlog([FromForm] BlogUpdateDto blog)
+        {
+            // get Current user
+            var currentUser = await GetCurrentUserAsync(HttpContext.User);
+            if (currentUser == null) return Unauthorized(new ApiResponse(401));
+
+            // check id Blog existing
+            var _blog = await _context.Blog.FindAsync(blog.Id);
+            if (_blog == null) return NotFound(new ApiResponse(404));
+
+            var _categoriesIds = await CheckExistingCategories(blog.Categories);
+            if (_categoriesIds == null)
+                return NotFound(new ApiResponse(404, "some Categories not exist!"));
+
+            // check if curent user has a Permission
+            var permission = await PermissionsManagement(currentUser, _blog);
+            if (!permission)
+                return BadRequest(new ApiResponse(400, "current User doesn't has a permation to update this blog"));
+
+            try
+            {
+                // maping _blog(BlogUpdateDto) class to a Blog class, 
+                _mapper.Map(blog, _blog);
+                // after update the blog set new user id who updated this blog, and update date
+                _blog.UserId = currentUser.Id;
+                _blog.ModifiedDate = DateTime.Now;
+            
+                if(await _blogRepo.UpdateAsync(_blog))
+                {
+                    // get old categoties list
+                    IReadOnlyList<BlogCategoryList> oldCategories = await _blogCategoryListRepo.ListAsync(new GetBlogCategoriesListSpeci(_blog.Id));
+
+                    // delete old Categoties
+                    foreach (var oldCat in oldCategories)
+                        await _blogCategoryListRepo.RemoveAsync(oldCat);
+
+                    // Add new Categories
+                    foreach (var id in _categoriesIds)
+                    {
+                        var newCat = new BlogCategoryList { BlogId = _blog.Id, BlogCategoryId = id };
+                        await _blogCategoryListRepo.AddAsync(newCat);
+                    }
+                    // update
+                    await _blogRepo.SaveChangesAsync();
+                    return Ok($"Update Blog Successfully");
+                }
+                return BadRequest(new ApiResponse(400, $"Somthing wrong!"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse(400, $"Error: {ex.Message}"));
+            }
+        }
+
+
+        // to check if all categories are existing in database
+        private async Task<List<int>> CheckExistingCategories(string categories)
+        {
+            //check id category existing, example: Convert string "[1, 2, 3]" to int list
+            List<int> _categoriesIds = categories.Trim('[', ']').Split(',').Select(int.Parse).ToList();
+            foreach (var id in _categoriesIds)
+            {
+                // check if this Category existing in Category Source
+                var categorySource = await _blogSourceCategoryRepo.ModelDetailsAsync(new GetBlogSourceCategories(id));
+                if (categorySource == null)
+                    return null;
+            }
+            return _categoriesIds;
+        }
+
+        /// <summary>
+        /// Powers are based on priority of <paramref name="currentUser"/> , SuperAdmin can do everything, Admin can create update all Editors Actions
+        /// </summary>
+        /// <returns>
+        /// if curent user is the same blog's Creater: Return true. /
+        /// if current user is SuperAdmin : Return true. /
+        /// if current user is SuperAdmin and Blog Creater is any of (Editor, Admin or SuperAdmin): Return true. /
+        /// if current user is Admin and Blog Creater is any of (Admin or SuperAdmin): Return false. /
+        /// if current user is Admin and Blog Creater is Editor: Return true.
+        /// </returns>
+
+        private async Task<bool> PermissionsManagement(AppUser currentUser, Blog blog)
+        {
+            var superAdmin = await _userManager.GetUsersInRoleAsync("SuperAdmin");
+            var superAdminId = superAdmin.Select(u => u.Id).FirstOrDefault();
+            // if current user is SuperAdmin update this blog
+            if (currentUser.Id != superAdminId)
+            {
+                // if curent user is the blog's creator
+                if (blog.UserId != currentUser.Id)
+                {
+                    // get curent user Role
+                    var currentUserRole = (await _userManager.GetRolesAsync(currentUser)).FirstOrDefault();
+
+                    // get Blog creater's Role
+                    var blogCreater = await _userManager.FindByIdAsync(blog.UserId);
+                    var blogCreaterRole = (await _userManager.GetRolesAsync(blogCreater)).FirstOrDefault();
+                    
+                    if ((currentUserRole == "Admin" && blogCreaterRole == "Admin") ||
+                        (currentUserRole == "Admin" && blogCreaterRole == "SuperAdmin") ||
+                        (currentUserRole == "Editor" && blogCreaterRole == "Editor") ||
+                        (currentUserRole == "Editor" && blogCreaterRole == "Admin") ||
+                        (currentUserRole == "Editor" && blogCreaterRole == "SuperAdmin"))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+
+
 
         /// <summary>
         /// Inside WebToken there is an Email, from this email Get User from user associated on controller and HttpContext absract class.

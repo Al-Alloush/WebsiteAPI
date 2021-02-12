@@ -22,5 +22,7 @@ namespace Core.Interfaces.Repository
         Task<string>  UploadFileAsync(IFormFile file, string fileDirPath);
 
         Task<bool> DeleteFilesFromServerAsync(string filePath);
+
+        Task<bool> UpdateAsync(T model);
     }
 }
