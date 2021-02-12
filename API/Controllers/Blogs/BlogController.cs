@@ -203,7 +203,7 @@ namespace API.Controllers.Blogs
             if (currentUser == null) return Unauthorized(new ApiResponse(401));
 
             // check id Blog existing
-            var _blog = await _context.Blog.FindAsync(blog.Id);
+            var _blog = await _blogRepo.ModelDetailsAsync(new GetBlogsListPaginationOrBlogDetailsSpeci(blog.Id));
             if (_blog == null) return NotFound(new ApiResponse(404));
 
             var _categoriesIds = await CheckExistingCategories(blog.Categories);
@@ -252,6 +252,7 @@ namespace API.Controllers.Blogs
 
         // Post: Add New Blog's Image
         [HttpPost("AddNewBlogImages")]
+        [Authorize(Roles = "SuperAdmin, Admin, Editor")]
         public async Task<ActionResult<string>> AddNewBlogImages([FromForm] BlogAddImageDto blogImage)
         {
 
@@ -299,7 +300,7 @@ namespace API.Controllers.Blogs
             // check if curent user has a Permission
             var permission = await PermissionsManagement(currentUser, blog);
             if (!permission)
-                return BadRequest(new ApiResponse(400, "current User doesn't has a permation to update this blog"));
+                return BadRequest(new ApiResponse(400, "current User doesn't has a permation to delete this Image"));
 
             if (await _uploadImageRepo.RemoveAsync(image))
                 if (await _uploadImageRepo.SaveChangesAsync())
@@ -310,6 +311,42 @@ namespace API.Controllers.Blogs
 
             return BadRequest(new ApiResponse(400, "somthing wrong!"));
         }
+
+
+        // Delete: Delete the Blog
+        [HttpDelete("DeleteBlog")]
+        [Authorize(Roles = "SuperAdmin, Admin, Editor")]
+        public async Task<ActionResult<string>> DeleteBlog([FromForm] int blogId)
+        {
+            // get Current user
+            var currentUser = await GetCurrentUserAsync(HttpContext.User);
+            if (currentUser == null) return Unauthorized(new ApiResponse(401));
+
+            // check id Blog existing
+            var blog = await _blogRepo.ModelDetailsAsync(new GetBlogsListPaginationOrBlogDetailsSpeci(blogId));
+            if (blog == null) return NotFound(new ApiResponse(404));
+
+            // check if curent user has a Permission
+            var permission = await PermissionsManagement(currentUser, blog);
+            if (!permission)
+                return BadRequest(new ApiResponse(400, "current User doesn't has a permation to Delete this blog"));
+
+            // get the Images list to delete them from server
+            IReadOnlyList<UploadBlogImagesList> imagesList = await _uploadImageRepo.ListAsync(new GetImageByIdOrImagsByBlogIdSpeci(blog.Id, true));
+
+            // Delete the Blog, because this blog is relation with other tables with Cascade, we don't need to deleten all references Models form other tables, but need just to delete images from server
+            if (await _blogRepo.RemoveAsync(blog))
+                if(await _blogRepo.SaveChangesAsync())
+                    foreach (var image in imagesList)
+                    {
+                        System.IO.File.Delete(_webHostEnvironment.WebRootPath + image.Path);
+                        return Ok("Delete Blog successfully");
+                    }
+
+            return BadRequest(new ApiResponse(400, $"Somthing wrong!"));
+
+        }
+
 
         private async Task<bool> UploadFilesAndUpdateTable(IReadOnlyList<IFormFile> files, string userId, Blog blog)
         {
@@ -421,7 +458,9 @@ namespace API.Controllers.Blogs
                         (currentUserRole == "Admin" && blogCreaterRole == "SuperAdmin") ||
                         (currentUserRole == "Editor" && blogCreaterRole == "Editor") ||
                         (currentUserRole == "Editor" && blogCreaterRole == "Admin") ||
-                        (currentUserRole == "Editor" && blogCreaterRole == "SuperAdmin"))
+                        (currentUserRole == "Editor" && blogCreaterRole == "SuperAdmin") || 
+                        currentUserRole == "Visitor" 
+                        )
                         return false;
                 }
             }
