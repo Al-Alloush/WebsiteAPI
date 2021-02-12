@@ -1,17 +1,19 @@
-﻿using Core.Models.Identity;
+﻿using Core.Models.Blogs;
+using Core.Models.Identity;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
 
 namespace Core.Models.Uploads
 {
-    [Table("Uploads")]
-    public class Upload
+    [Table(name: "UploadBlogImagesList")]
+    public class UploadBlogImagesList
     {
         public int Id { get; set; }
 
         [Required(ErrorMessage = "{0} is Required")]
-        [StringLength(100, ErrorMessage = "The {0} must be less than {1} characters.")]
         [Display(Name = "Name")]
         public string Name { get; set; }
 
@@ -19,12 +21,17 @@ namespace Core.Models.Uploads
         [Display(Name = "Path")]
         public string Path { get; set; }
 
-        [Required(ErrorMessage = "{0} is Required")]
-        public DateTime AddedDateTime { get; set; }
+        public int BlogId { get; set; }
+        public Blog Blog { get; set; }
+
+        public bool Default { get; set; }
 
         [Required(ErrorMessage = "{0} is Required")]
         public string UserId { get; set; }
         public AppUser User { get; set; }
+
+        public int UploadTypeId { get; set; }
+        public UploadType UploadType { get; set; }
 
     }
 }

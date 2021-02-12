@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\Uploads\Images\" />
+    <Folder Include="wwwroot\Views\AccountManager\" />
   </ItemGroup>
 
 </Project>

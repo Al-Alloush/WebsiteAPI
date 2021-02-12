@@ -2,14 +2,18 @@ using API.ErrorsHandlers;
 using API.Extensions.ApiServices;
 using AutoMapper;
 using Core.Helppers;
+using Core.Interfaces.Repository;
 using Infrastructure.Data;
 using Infrastructure.Data.Services;
+using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using System.IO;
 
 namespace API
 {
@@ -47,6 +51,8 @@ namespace API
             // to use EmailSmsSender Service in API project
             services.AddScoped<EmailSmsSenderService>();
 
+            // add all Repositories:
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>)); 
 
         }
 
@@ -66,6 +72,16 @@ namespace API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            // to work with Static files like images and html files 
+            app.UseStaticFiles();
+            app.UseFileServer(new FileServerOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
+                RequestPath = "/wwwroot",
+                EnableDefaultFiles = true
+            });
 
             // to worke Authentication JWT Service
             app.UseAuthentication();
