@@ -62,7 +62,7 @@ namespace Infrastructure.Repositories
         public async Task<bool> RemoveAsync(T model)
         {
             EntityEntry<T> result =  _context.Remove(model) ;
-            if (result.State.ToString() == "added")
+            if (result.State.ToString() == "Deleted")
                 return true;
             else
                 return false;

@@ -93,7 +93,7 @@ namespace API.Controllers.Blogs
             foreach (var blog in _blogs)
             {
                 // add default image in BlogCard
-                UploadBlogImagesList imagesList = await _uploadImageRepo.ModelDetailsAsync(new getBlogImagesListOrDefaultImageSpeci(blog.Id, true));
+                UploadBlogImagesList imagesList = await _uploadImageRepo.ModelDetailsAsync(new GetImageByIdOrImagsByBlogIdSpeci(blog.Id, true, true));
                 if(imagesList != null )
                     blog.DefaultBlogImage = imagesList.Path;
 
@@ -136,7 +136,7 @@ namespace API.Controllers.Blogs
                 cat.Name = (await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoryNameSpeci(cat.BlogCategoryId, blog.LanguageId))).Name;
 
             // get Blog's images;
-            IReadOnlyList<UploadBlogImagesList> imagesList = await _uploadImageRepo.ListAsync(new getBlogImagesListOrDefaultImageSpeci(_blog.Id)) ;
+            IReadOnlyList<UploadBlogImagesList> imagesList = await _uploadImageRepo.ListAsync(new GetImageByIdOrImagsByBlogIdSpeci(_blog.Id, true)) ;
             _blog.BlogImagesList = _mapper.Map<IReadOnlyList<UploadBlogImagesList>, IReadOnlyList<BlogImageDto>>(imagesList);
 
             
@@ -278,7 +278,38 @@ namespace API.Controllers.Blogs
 
         }
 
+        [HttpDelete("DeleteBlogImage")]
+        public async Task<ActionResult<string>> DeleteBlogImage([FromForm] int imageId)
+        {
+            // get Current user
+            var currentUser = await GetCurrentUserAsync(HttpContext.User);
+            if (currentUser == null) return Unauthorized(new ApiResponse(401));
 
+            // check if image existing 
+            var image = await _uploadImageRepo.ModelDetailsAsync(new GetImageByIdOrImagsByBlogIdSpeci(imageId));
+            if (image == null)
+                return NotFound(new ApiResponse(404, "this image not exist!"));
+
+            // check id Blog existing to get its Id
+            // get Blog Details
+            var blog = await _blogRepo.ModelDetailsAsync(new GetBlogsListPaginationOrBlogDetailsSpeci(image.BlogId));
+            if (blog == null)
+                return NotFound(new ApiResponse(404, "this Blog not exist!"));
+
+            // check if curent user has a Permission
+            var permission = await PermissionsManagement(currentUser, blog);
+            if (!permission)
+                return BadRequest(new ApiResponse(400, "current User doesn't has a permation to update this blog"));
+
+            if (await _uploadImageRepo.RemoveAsync(image))
+                if (await _uploadImageRepo.SaveChangesAsync())
+                {
+                    System.IO.File.Delete(_webHostEnvironment.WebRootPath + image.Path);
+                    return Ok("Successfully Delete Image"); // Successfully Delete Image
+                }
+
+            return BadRequest(new ApiResponse(400, "somthing wrong!"));
+        }
 
         private async Task<bool> UploadFilesAndUpdateTable(IReadOnlyList<IFormFile> files, string userId, Blog blog)
         {
