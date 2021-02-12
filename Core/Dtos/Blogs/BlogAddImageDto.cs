@@ -8,6 +8,6 @@ namespace Core.Dtos.Blogs
     public class BlogAddImageDto
     {
         public List<IFormFile> Files { get; set; }
-        public string BlogId { get; set; }
+        public int BlogId { get; set; }
     }
 }

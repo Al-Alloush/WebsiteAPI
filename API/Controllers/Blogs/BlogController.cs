@@ -93,7 +93,7 @@ namespace API.Controllers.Blogs
             foreach (var blog in _blogs)
             {
                 // add default image in BlogCard
-                UploadBlogImagesList imagesList = await _uploadImageRepo.ModelDetailsAsync(new getBlogImagesListOrDefaultImageSpeci(blog.Id));
+                UploadBlogImagesList imagesList = await _uploadImageRepo.ModelDetailsAsync(new getBlogImagesListOrDefaultImageSpeci(blog.Id, true));
                 if(imagesList != null )
                     blog.DefaultBlogImage = imagesList.Path;
 
@@ -136,7 +136,7 @@ namespace API.Controllers.Blogs
                 cat.Name = (await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoryNameSpeci(cat.BlogCategoryId, blog.LanguageId))).Name;
 
             // get Blog's images;
-            IReadOnlyList<UploadBlogImagesList> imagesList = await _uploadImageRepo.ListAsync(new getBlogImagesListOrDefaultImageSpeci(_blog.Id, defaultImg: true)) ;
+            IReadOnlyList<UploadBlogImagesList> imagesList = await _uploadImageRepo.ListAsync(new getBlogImagesListOrDefaultImageSpeci(_blog.Id)) ;
             _blog.BlogImagesList = _mapper.Map<IReadOnlyList<UploadBlogImagesList>, IReadOnlyList<BlogImageDto>>(imagesList);
 
             
@@ -183,63 +183,15 @@ namespace API.Controllers.Blogs
                     }
                     // ************************************* add blog images
                     // the first image is Default
-                    bool defaultImage = true;
-                    if(blog.Files !=null)
-                    {
-                        if (blog.Files.Count > 0 && blog.Files.Count < 6)
-                        {
-                            List<string> uploadedFilesPath = new List<string>(); 
-                            foreach (var file in blog.Files)
-                            {
-                                if (file != null && file.Length > 0)
-                                {
-                                    // upload the image and return the new file name
-                                    var fileName = await _uploadImageRepo.UploadFileAsync(file, _webHostEnvironment.WebRootPath + BLOG_IMAGE_DIRECTORY);
-                                    if (!string.IsNullOrEmpty(fileName))
-                                    {
-                                        var blogImage = new UploadBlogImagesList
-                                        {
-                                            Name = fileName,
-                                            Path = BLOG_IMAGE_DIRECTORY + fileName,
-                                            BlogId = newBlog.Id,
-                                            Default = defaultImage,
-                                            UserId = currentUser.Id,
-                                            UploadTypeId = 3 // Blog type
-                                        };
-                                        // first image is default
-                                        defaultImage = false;
+                    var updated = await UploadFilesAndUpdateTable(blog.Files, currentUser.Id, newBlog);
+                    if(!updated)
+                        return BadRequest(new ApiResponse(400, "Something Wrong! with Upload images"));
 
-                                        // to delete these files from the server if not successful to add the Blog
-                                        uploadedFilesPath.Add(BLOG_IMAGE_DIRECTORY + fileName);
-
-                                        // add BlogImagesList Model
-                                        if (!await _uploadImageRepo.AddAsync(blogImage))
-                                        {
-                                            // if not success add of any Blog's images, delete the new Blog with all uploadded images in server
-                                            await _blogRepo.RemoveAsync(newBlog);
-                                            await _blogRepo.SaveChangesAsync();
-                                            foreach (var filePath in uploadedFilesPath)
-                                                await _uploadImageRepo.DeleteFilesFromServerAsync(_webHostEnvironment.WebRootPath + filePath);
-
-                                            return BadRequest( new ApiResponse(400, "Something Wrong! with update uploadBlogImageslist images"));
-                                        }
-                                    }
-                                    else
-                                        return BadRequest(new ApiResponse(400, "Something Wrong! with Upload images"));
-                                }
-                            }
-                        }
-                        else
-                            return BadRequest(new ApiResponse(400, "The maximum number of photos is 5"));
-                    }
-                    // update database after add all images and Categories
-                    await _blogCategoryListRepo.SaveChangesAsync();
                     return Ok("Add Blog successfully");
                 }
             }
             return BadRequest(new ApiResponse(400, "Something Wrong! with add new Blog"));
         }
-
 
         [Authorize(Roles = "SuperAdmin, Admin, Editor")]
         // Put: update the Blog
@@ -296,6 +248,98 @@ namespace API.Controllers.Blogs
             {
                 return BadRequest(new ApiResponse(400, $"Error: {ex.Message}"));
             }
+        }
+
+        // Post: Add New Blog's Image
+        [HttpPost("AddNewBlogImages")]
+        public async Task<ActionResult<string>> AddNewBlogImages([FromForm] BlogAddImageDto blogImage)
+        {
+
+            // get Current user
+            var currentUser = await GetCurrentUserAsync(HttpContext.User);
+            if (currentUser == null) return Unauthorized(new ApiResponse(401));
+
+            // check id Blog existing
+            // get Blog Details
+            var blog = await _blogRepo.ModelDetailsAsync(new GetBlogsListPaginationOrBlogDetailsSpeci(blogImage.BlogId));
+            if (blog == null)
+                return NotFound(new ApiResponse(404, "this Blog not exist!"));
+
+            // check if curent user has a Permission
+            var permission = await PermissionsManagement(currentUser, blog);
+            if (!permission)
+                return BadRequest(new ApiResponse(400, "current User doesn't has a permation to update this blog"));
+
+            var updated = await UploadFilesAndUpdateTable(blogImage.Files, currentUser.Id, blog);
+            if (!updated)
+                return BadRequest(new ApiResponse(400, "Something Wrong! with Upload images"));
+
+            return Ok("Add images successfully");
+
+        }
+
+
+
+        private async Task<bool> UploadFilesAndUpdateTable(IReadOnlyList<IFormFile> files, string userId, Blog blog)
+        {
+            bool defaultImage = false;
+
+            // Check if this blog contains default image
+            IReadOnlyList<UploadBlogImagesList> imagesList = await _uploadImageRepo.ListAsync(new getBlogImagesListOrDefaultImageSpeci(blog.Id, true));
+            if (imagesList.Count() <= 0)
+                defaultImage = true;
+
+            if (files != null)
+            {
+                if (files.Count > 0 && files.Count < 6)
+                {
+                    List<string> uploadedFilesPath = new List<string>();
+                    foreach (var file in files)
+                    {
+                        if (file != null && file.Length > 0)
+                        {
+                            // upload the image and return the new file name
+                            var fileName = await _uploadImageRepo.UploadFileAsync(file, _webHostEnvironment.WebRootPath + BLOG_IMAGE_DIRECTORY);
+                            if (!string.IsNullOrEmpty(fileName))
+                            {
+                                var blogImage = new UploadBlogImagesList
+                                {
+                                    Name = fileName,
+                                    Path = BLOG_IMAGE_DIRECTORY + fileName,
+                                    BlogId = blog.Id,
+                                    Default = defaultImage,
+                                    UserId = userId,
+                                    UploadTypeId = 3 // Blog type
+                                };
+                                // first image is default
+                                defaultImage = false;
+
+                                // to delete these files from the server if not successful to add the Blog
+                                uploadedFilesPath.Add(BLOG_IMAGE_DIRECTORY + fileName);
+
+                                // add BlogImagesList Model
+                                if (!await _uploadImageRepo.AddAsync(blogImage))
+                                {
+                                    // if not success add of any Blog's images, delete the new Blog with all uploadded images in server
+                                    await _blogRepo.RemoveAsync(blog);
+                                    await _blogRepo.SaveChangesAsync();
+                                    foreach (var filePath in uploadedFilesPath)
+                                        await _uploadImageRepo.DeleteFilesFromServerAsync(_webHostEnvironment.WebRootPath + filePath);
+
+                                    return false;
+                                }
+                            }
+                            else
+                                return false;
+                        }
+                    }
+                }
+                else
+                    return false;
+            }
+            // update database after add all images and Categories
+            await _blogCategoryListRepo.SaveChangesAsync();
+            return true;
         }
 
 

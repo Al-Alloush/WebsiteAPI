@@ -22,7 +22,7 @@ namespace Core.Specifications.Blogs
         /// </summary>
         /// <para>blogId:  the Blog Id that we need to get all its images</para>
         /// <para>defaultImg:  if was true return default image</para>
-        public getBlogImagesListOrDefaultImageSpeci(int blogId, bool defaultImg) : base(x => x.BlogId == blogId && (defaultImg || x.Default == defaultImg))
+        public getBlogImagesListOrDefaultImageSpeci(int blogId, bool defaultImg) : base(x => x.BlogId == blogId && (!defaultImg || x.Default == defaultImg))
         {
 
         }
