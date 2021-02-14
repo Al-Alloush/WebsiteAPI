@@ -34,7 +34,6 @@ namespace Infrastructure.Data
                 var name = "visitor";
                 var role = "Visitor";
                 var AuPass = false;
-                var lang = "de,";
 
                 if (i >= 20 && i < 25)
                 {
@@ -56,15 +55,6 @@ namespace Infrastructure.Data
                     Confirmed = false;
                 }
 
-                if (i % 2 == 0)
-                    lang = "de,ar,";
-
-                if (i % 7 == 0)
-                    lang = "ar,";
-
-                if (i % 8 == 1)
-                    lang = "en,fr,";
-
                 var userS = new AppUser
                 {
                     Email = name + "_" + i + "@al-alloush.com",
@@ -72,7 +62,6 @@ namespace Infrastructure.Data
                     UserName = name + "_" + i,
                     FirstName = "First " + name + " Name",
                     LastName = "Last " + name + " Name",
-                    SelectedLanguages = lang,
                     RegisterDate = DateTime.Now,
                     Birthday = DateTime.Parse("15/6/1978", MyCultureInfo),
                     PhoneNumber = "17328547" + i,
@@ -96,39 +85,68 @@ namespace Infrastructure.Data
             var users = await context.Users.ToArrayAsync();
             for (int i = 1; i < users.Length; i++)
             {
+
                 var imgNum = random.Next(1, 52);
-                var upload = new Upload
-                {
-                    Name = "user (" + imgNum + "): " + random.Next(1, 100000),
-                    Path = "/Uploads/Images/user (" + imgNum + ").jpg",
-                    AddedDateTime = DateTime.Now,
-                    UserId = users[i].Id
-                };
-                await context.Upload.AddAsync(upload);
-                await context.SaveChangesAsync();
-            }
-
-            for (int i = 1; i < users.Length; i++)
-            {
-                var userUploads = await context.Upload.FirstOrDefaultAsync(u => u.UserId == users[i].Id);
-
                 var userImage = new UploadUserImagesList
                 {
-                    UploadId = userUploads.Id,
+
+                    Name = "user (" + imgNum + "): " + random.Next(1, 100000),
+                    Path = "/Uploads/Images/user (" + imgNum + ").jpg",
                     UserId = users[i].Id,
                     Default = true,
                     UploadTypeId = 1
                 };
                 await context.UploadUserImagesList.AddAsync(userImage);
+            }
+            await context.SaveChangesAsync();
+
+            // 
+            for (int iu = 0; iu < users.Length; iu++)
+            {
+                string[] languages = { "de", "ar" };
+                // add default languages
+                for (int i = 0; i < 2; i++)
+                {
+                    var lang = new UserSelectedLanguages
+                    {
+                        UserId = users[iu].Id,
+                        LanguageId = languages[i]
+                    };
+
+                    await context.UserSelectedLanguages.AddAsync(lang);
+                }
                 await context.SaveChangesAsync();
             }
         }
 
-        public class BlogUploads
+        private static string[] bodyEn =
         {
-            public int BlogId { get; set; }
-            public int UploadId { get; set; }
-        }
+                    "A delicious and delicious dish with a beautiful shape that can be prepared from the vegetables that are always present in the Arab cuisine",
+                     "Appetizers, appetizers, mezze (in the Levant), or Moftahat (in Tunisia) is a food item of vegetables or fruits that is cooked, pickled or minced, and it is usually used as a seasoning, especially to beautify the main dish.",
+                     "Pickle is made from pickling (pickle it), that is, put it in a substance that has been mixed with it",
+
+                    "Man experienced travel from the beginning of his existence on the planet, when he was obliged to move in search of water and food, then he continued with that after he became rich from the hardships of the road, as the human soul became unbearable.",
+                    "The positive and negative aspects of travel and feelings are governed by the nature of a person on the one hand and the nature of his travel and his condition on the other hand.",
+
+                    "Fairouz is a Lebanese singer. Her real name is'Nihad Rizk Wadih Haddad', she was born in November 1935 in a neighborhood called'Zuqaq El Blat'in Beirut. She performed many songs and operas.",
+                    "Laila Murad is an Egyptian singer and actress. She is considered one of the most prominent singers and actresses in the Arab world in the twentieth century. She started her singing career at the age of fourteen years",
+                    "Sayed Darwish is an Egyptian singer and composer, whose real name is Mr. Darwish Al-Bahr. He is the renewer of music and the catalyst for musical renaissance [?] In Egypt and the Arab world.",
+
+                    "The Summer Olympics, or the Summer Olympics, is a sporting event that takes place every four years for the Olympic Games.",
+                     "LeBron James finished first among the NBA players and generally second after Cristiano Ronaldo, the Real Madrid star who topped the list. Kevin Durant finished eighth.",
+
+                    "He defined fitness by Clarke, 1976 as the ability to carry out daily tasks with strength, awareness, and without undue fatigue from the availability of sufficient energy.",
+                    "They are the physical features that an individual has to achieve in order to do normal daily chores with the best efficiency without feeling tired and exhausted. Daily chores are simple, but they may become more complex to include competitive sports and more difficult activities.",
+                    "Flexibility is the joint's ability to move to the farthest extent within its range of motion! Examples of exercises that improve flexibility are yoga exercises and stretch the body. For example, put your feet on the ground with a distance between them.",
+
+                   "Mars or the red planet is the fourth planet in terms of distance from the sun in the solar system and it is the outermost neighbor of the earth and it is classified as a rocky planet.",
+                    "The massacre of the castle, or the massacre of the Mamluks, is a historical incident that occurred in the Ottoman province of Egypt, which was orchestrated by Muhammad Ali Pasha to get rid of his Mamluk enemies on Friday 5 Safar 1226 AH corresponding to March 1.",
+                    "The United States of America has detained more than 779 extrajudicial administrative detainees at the American Guantanamo Bay detention center in Cuba since the opening of the detention camps on January 11, 2002.",
+                    "The cultural movement is every change in the way of thinking and prevailing beliefs regarding a group of cultural issues related to certain aspects and branches, which results in a change in the way we approach and treat work.",
+                    "Applied engineering means applying science to meet human needs, through the application of theoretical and applied sciences: physics, chemistry, mathematics, and biology.",
+                    "A robot or a robot (in English: Robot) is a mechanical tool capable of carrying out pre-programmed activities, and the robot performs these activities.",
+                    "Imhotep was the builder of the stepped pyramid of Djoser, the first architect, and one of the most famous engineers in ancient Egypt. He was raised to the rank of an idol after his death and became the god of medicine."
+                };
 
         private static string[] bodyAr =
         {
@@ -204,12 +222,28 @@ namespace Infrastructure.Data
                     {
                         var randNum = random.Next(1, 100);
 
-                        var title = i % 2 == 0 ? bodyDe[i].Substring(0, 15) : bodyAr[i].Substring(0, 15);
-                        var sTitle = i % 2 == 0 ? bodyDe[i].Substring(0, 30) : bodyAr[i].Substring(0, 30);
-                        var body = i % 2 == 0 ? bodyDe[i] : bodyAr[i];
-                        var lngId = i % 2 == 0 ? DefLanguageCodeId[2] : DefLanguageCodeId[1];
-                        var publiched = random.Next(0,1000) < 990 ? true : false;
-                        var top = random.Next(0, 1000) < 2 ? true : false; // to add some of blogs  of Top of the list
+
+                        var title = bodyAr[i].Substring(0, 15);
+                        var sTitle = bodyAr[i].Substring(0, 30);
+                        var body =  bodyAr[i];
+                        var lngId = DefLanguageCodeId[1];
+                        var publiched = random.Next(0, 1000) < 990 ? true : false;
+                        var top = random.Next(0, 10000) < 2 ? true : false; // to add some of blogs  of Top of the list
+
+                        if (randNum > 33 && randNum < 66)
+                        {
+                            title = bodyDe[i].Substring(0, 15);
+                            sTitle = bodyDe[i].Substring(0, 30);
+                            body = bodyDe[i];
+                            lngId = DefLanguageCodeId[2];
+                        }
+                        if (randNum > 66)
+                        {
+                            title = bodyEn[i].Substring(0, 15);
+                            sTitle = bodyEn[i].Substring(0, 30);
+                            body = bodyEn[i];
+                            lngId = DefLanguageCodeId[0];
+                        }
 
                         // change some relaseDate
                         var daterelase = DateTime.Now;
@@ -247,7 +281,9 @@ namespace Infrastructure.Data
                             ReleaseDate = daterelase,
                             LanguageId = lngId,
                             UserId = user.Id,
-                            AddedDateTime = DateTime.Now
+                            UserModifiedId = user.Id,
+                            AddedDateTime = DateTime.Now,
+                            ModifiedDate = DateTime.Now
                         };
                         context.Blog.Add(newBlog);
                     }
@@ -281,62 +317,36 @@ namespace Infrastructure.Data
             }
             await context.SaveChangesAsync();
 
-            // Add Blogs Images, every blog has from 1 to 3 images
-            var blogUpload = new List<BlogUploads>();
-            int uploadId = 1000;
+            // add Blog images
             foreach (var blog in blogs)
             {
                 var indexImage = random.Next(1, 52);
                 var repNumber = random.Next(1, 4);
+                var defaultImage = true;
                 for (int rep = 1; rep <= repNumber; rep++)
                 {
-                    var upload = new Upload
+
+                    var blogImage = new UploadBlogImagesList
                     {
-                        Id = uploadId,
                         Name = "img (" + indexImage + "_" + rep + ")",
                         Path = "/Uploads/Images/img (" + indexImage + ").jfif",
-                        AddedDateTime = DateTime.Now,
-                        UserId = blog.UserId
-                    };
-                    await context.Upload.AddAsync(upload);
-                    uploadId++;
-                    var saveBlogUplad = new BlogUploads
-                    {
                         BlogId = blog.Id,
-                        UploadId = upload.Id
+                        Default = defaultImage,
+                        UserId = blog.UserId,
+                        UploadTypeId = 3
                     };
-                    blogUpload.Add(saveBlogUplad);
+                    defaultImage = false;
+                    await context.UploadBlogImagesList.AddAsync(blogImage);
                 }
-            }
-            //await context.SaveChangesAsync();
-
-            // add images data in UploadBlogImagesList table
-            var defaultImage = true;
-            int blogId = 0;
-            foreach (var item in blogUpload)
-            {
-                if (item.BlogId != blogId)
-                    defaultImage = true;
-
-                var blogImage = new UploadBlogImagesList
-                {
-                    UploadId = item.UploadId,
-                    BlogId = item.BlogId,
-                    Default = defaultImage,
-                    UploadTypeId = 3
-                };
-                blogId = item.BlogId;
-                defaultImage = false;
-
-                await context.UploadBlogImagesList.AddAsync(blogImage);
+               
             }
             await context.SaveChangesAsync();
 
-
+            // add like and dislike
             foreach (var user in users)
             {
                 // like/dislike number for this user
-                var repeatedNum = random.Next(1, 100);
+                var repeatedNum = random.Next(1, blogs.Count()/3);
                 // to be sure the blog id is not repeated for every user
                 var blogIdsList = new List<int>();
                 for (int i = 0; i < repeatedNum; i++)
@@ -348,7 +358,7 @@ namespace Infrastructure.Data
                     // if this blog not selected before
                     if (!blogIdsList.Contains(randomBlog.Id))
                     {
-                        if (random.Next(1, 5) < 2)
+                        if (random.Next(0, 6) < 3)
                         {
                             like = false;
                             dislike = true;

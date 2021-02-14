@@ -20,5 +20,8 @@ namespace Core.Dtos.Blogs
         [Display(Name = "LanguageId")]
         public string LanguageId { get; set; }
 
+        [Display(Name = "Language")]
+        public string Language { get; set; }
+
     }
 }

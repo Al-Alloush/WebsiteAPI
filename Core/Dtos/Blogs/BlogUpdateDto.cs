@@ -29,6 +29,9 @@ namespace Core.Dtos.Blogs
         [Display(Name = "AtTop")]
         public bool AtTop { get; set; }
 
+        [Display(Name = "Commentable")]
+        public bool Commentable { get; set; }
+
         [Required(ErrorMessage = "{0} is Required")]
         [Display(Name = "Release Date")]
         public DateTime ReleaseDate { get; set; }

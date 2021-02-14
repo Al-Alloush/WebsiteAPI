@@ -13,16 +13,21 @@ namespace Core.Models.Uploads
         public int Id { get; set; }
 
         [Required(ErrorMessage = "{0} is Required")]
-        public string UserId { get; set; }
-        public AppUser User { get; set; }
+        [Display(Name = "Name")]
+        public string Name { get; set; }
 
         [Required(ErrorMessage = "{0} is Required")]
-        public int UploadId { get; set; }
-        public Upload Upload { get; set; }
+        [Display(Name = "Path")]
+        public string Path { get; set; }
+
+        [Required(ErrorMessage = "{0} is Required")]
+        public string UserId { get; set; }
+        public AppUser User { get; set; }
 
         public bool Default { get; set; }
 
         public int UploadTypeId { get; set; }
         public UploadType UploadType { get; set; }
+
     }
 }
