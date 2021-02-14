@@ -34,7 +34,7 @@ namespace Core.Helppers
             CreateMap<BlogCategoryListDto, BlogCategoryList>();
             CreateMap<BlogComment, BlogCommentDto>().ForMember(b => b.UserName, m => m.MapFrom(l => l.User.UserName));
             CreateMap<BlogCommentDto, BlogComment>();
-            CreateMap<BlogCategory, BlogCategoryDto>();
+            CreateMap<BlogCategory, BlogCategoryDto>().ForMember(b => b.Language, m => m.MapFrom(l => l.Language.Name));
             CreateMap<BlogCategoryDto, BlogCategory>();
             CreateMap<BlogUpdateDto, Blog>();
             CreateMap<Blog, BlogUpdateDto>();

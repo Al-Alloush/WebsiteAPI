@@ -143,7 +143,7 @@ namespace API.Controllers.Blogs
             return Ok(_blog);
         }
 
-        
+
         [Authorize(Roles = "SuperAdmin, Admin, Editor")]
         // Post: Create a Blog
         [HttpPost("CreateBlog")]
@@ -280,6 +280,7 @@ namespace API.Controllers.Blogs
         }
 
         [HttpDelete("DeleteBlogImage")]
+        [Authorize(Roles = "SuperAdmin, Admin, Editor")]
         public async Task<ActionResult<string>> DeleteBlogImage([FromForm] int imageId)
         {
             // get Current user
@@ -466,8 +467,6 @@ namespace API.Controllers.Blogs
             }
             return true;
         }
-
-
 
 
         /// <summary>
