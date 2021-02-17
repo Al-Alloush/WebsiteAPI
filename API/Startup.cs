@@ -33,15 +33,22 @@ namespace API
             // Add Mapping Tools
             services.AddAutoMapper(typeof(MappingProfiles));
 
-            // Add Sqlite DB Service
+            // Add Sqlite DB / SqlServer
             services.AddDbContext<AppDbContext>(x =>
             {
-                x.UseSqlite(Configuration.GetConnectionString("DbConnection"));
-            });
+                //x.UseSqlite(Configuration.GetConnectionString("DbConnection"));
 
+                var server = Configuration["DBServer"] ?? "localhost";
+                var port = Configuration["DBPort"] ?? "1433";
+                var user = Configuration["DBUser"] ?? "SA";
+                var password = Configuration["DBPassword"] ?? "userPass1";
+                var database = Configuration["DataBase"] ?? "standardDB";
+
+                x.UseSqlServer($"Server={server},{port}; Initial Catalog={database}; User ID={user}; Password={password}");
+            });
             // Add IdentityAndTokenServices from Extension file
             services.AddIdentityServices(Configuration);
-
+           
             //
             services.AddSwaggerDocumentation(Configuration);
 

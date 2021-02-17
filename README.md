@@ -31,6 +31,8 @@ dotnet restore
 install some identity packages into projects from NuGet Manager, to get RunTime-SDK version, or any info: ```> dotnet --info``` 
 ### for test in Database :
 - install ``Microsoft.EntityFramework.Core.Sqlite`` in **Infrastructure** Classlib, Select version the same Runtime machin/SDKs version
+### install SqlServer Package
+insatll Microsoft.EntityFrameworkCore.SqlServer`` in **Api** and **Infrastructure** projects, Select version the same Runtime machin/SDKs version
 
 ### Infrastructure Project:
 - install ``Microsoft.AspNetCore.Identity`` in **Infrastructure** Classlib, Select Latest version 
@@ -267,3 +269,37 @@ create new method in IGenericRepository pass ISpecification<T>
 
 ---
 
+## add SQL-Server Database for Production mode
+
+## install SqlServer Package
+insatll Microsoft.EntityFrameworkCore.SqlServer`` in Api and Infrastructure projects, Select version the same Runtime machin/SDKs version
+
+### Create mmsql Server in Docker container
+to create Docker **mmsql server**, open powerShell in ``docker-compose.yml`` file directory then write thie line: docker-compose up
+
+### Connect Microdoft SQL Server Mangement Studio with docker mmsql server.
+- Server type: **Databse Engine**
+- Server name: **localhost, 1433**
+- Authentication: **SQL Server Authentication**
+    - login/Username: **sa**
+    - Password: **userPass1**
+
+### in SQL Server Database need just one Reference as Casecade in table 
+if the table has more than one foreign key references with same reference like :
+```
+Blog creator is User and Blog on Delete Cascade with UserId, now BlogComment has two References FKs first for BlogId, and second for UserId.
+
+Here whare conflict happens, if the user deletes his account, then the blog will be deleted, now we have UserId and BlogId were deleted, then for BlogComments, with which one must delete it? BlogId or UserId?
+```
+### this throw an error: 
+``Introducing FOREIGN KEY constraint 'FK_??' on table '< TableName>' may cause cycles or multiple cascade paths. Specify ON DELETE NO ACTION or ON UPDATE NO ACTION, or modify other FOREIGN KEY constraints.``
+
+### to fix this error, Add in AppDbContext:
+```
+builder.Entity<Blog>().HasOne(p => p.UserModified).WithMany().HasForeignKey(p => p.UserModifiedId).OnDelete(DeleteBehavior.NoAction);
+builder.Entity<Blog>().HasOne(p => p.Language).WithMany().HasForeignKey(p => p.LanguageId).OnDelete(DeleteBehavior.NoAction);
+builder.Entity<BlogComment>().HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
+builder.Entity<BlogLike>().HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
+builder.Entity<UploadBlogImagesList>().HasOne(p => p.UploadType).WithMany().HasForeignKey(p => p.UploadTypeId).OnDelete(DeleteBehavior.NoAction);
+builder.Entity<UploadBlogImagesList>().HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
+```
