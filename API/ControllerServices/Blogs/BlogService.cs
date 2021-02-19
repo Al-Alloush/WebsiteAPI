@@ -1,5 +1,4 @@
-﻿using API.ErrorsHandlers;
-using AutoMapper;
+﻿using AutoMapper;
 using Core.Dtos.Blogs;
 using Core.Helppers;
 using Core.Interfaces.Repository;
@@ -8,7 +7,6 @@ using Core.Models.Identity;
 using Core.Models.Uploads;
 using Core.Specifications.Blogs;
 using Infrastructure.Data;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
