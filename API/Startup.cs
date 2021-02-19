@@ -1,3 +1,4 @@
+using API.ControllerServices.Blogs;
 using API.ErrorsHandlers;
 using API.Extensions.ApiServices;
 using AutoMapper;
@@ -59,7 +60,9 @@ namespace API
             services.AddScoped<EmailSmsSenderService>();
 
             // add all Repositories:
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>)); 
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            services.AddScoped<BlogService>();
 
         }
 
