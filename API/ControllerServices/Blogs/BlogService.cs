@@ -438,42 +438,6 @@ namespace API.ControllerServices.Blogs
             }
             return true;
         }
-
-        // to check if all categories are existing in database
-        private async Task<List<int>> CheckExistingCategories(string categories)
-        {
-            //check id category existing, example: Convert string "[1, 2, 3]" to int list
-            List<int> _categoriesIds = categories.Trim('[', ']').Split(',').Select(int.Parse).ToList();
-            foreach (var id in _categoriesIds)
-            {
-                // check if this Category existing in Category Source
-                var categorySource = await _blogSourceCategoryRepo.ModelDetailsAsync(new GetBlogSourceCategories(id));
-                if (categorySource == null)
-                    return null;
-            }
-            return _categoriesIds;
-        }
-
-        /// <summary>
-        /// Inside WebToken there is an Email, from this email Get User from user associated on controller and HttpContext absract class.
-        /// </summary>
-        /// <returns>
-        /// If ClaimsPrincipal httpContextUser = HttpContext.User; retrun an User Object 
-        /// else retrun null</returns> 
-        private async Task<AppUser> GetCurrentUserAsync(ClaimsPrincipal httpContextUser)
-        {
-            if (httpContextUser != null)
-            {
-                // get an email form Token Claim, that has been added in TockenServices.cs
-                var email = httpContextUser?.Claims?.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-                var user = await _userManager.Users.Include(x => x.Address).SingleOrDefaultAsync(x => x.Email == email);
-                return user;
-            }
-            else
-            {
-                return null;
-            }
-        }
     }
 
 
