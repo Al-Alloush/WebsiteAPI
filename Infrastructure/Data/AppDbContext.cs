@@ -23,6 +23,22 @@ namespace Infrastructure.Data
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            // delete Cascade for UserModifiedId & LanguageId ForeignKeys, Blog on Delete cascade with UserId
+            builder.Entity<Blog>().HasOne(p => p.UserModified).WithMany().HasForeignKey(p => p.UserModifiedId).OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<Blog>().HasOne(p => p.Language).WithMany().HasForeignKey(p => p.LanguageId).OnDelete(DeleteBehavior.NoAction);
+            // BlogComment & BlogLike on delete cascade with BlogId FK
+            builder.Entity<BlogComment>().HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<BlogLike>().HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
+
+            // UploadBlogImagesList Blog on delete cascade with BlogId FK
+            builder.Entity<UploadBlogImagesList>().HasOne(p => p.UploadType).WithMany().HasForeignKey(p => p.UploadTypeId).OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<UploadBlogImagesList>().HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
+
+            base.OnModelCreating(builder);
+        }
+
         // for all Tables of EntityFrameworkCore like (Users, Roles, ...) initialize here by default, IdentityDbContext took care of all of the work to create tables and relational between them.
         public DbSet<Address> Address { get; set; }
         public DbSet<UploadType> UploadType { get; set; }

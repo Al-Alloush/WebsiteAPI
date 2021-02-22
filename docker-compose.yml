@@ -1,0 +1,20 @@
+version: '3.6'
+services:
+    mysql:
+        image: "mcr.microsoft.com/mssql/server:latest"
+        container_name: mssqlserver
+        environment:
+            - ACCEPT_EULA=Y
+            - SA_PASSWORD=userPass1
+            - MSSQL_PID=Express
+        ports:
+            - 1433:1433
+        
+        networks:
+            network:
+        #restart: always
+
+
+networks:
+    # create Network By Default with directory name
+    network:

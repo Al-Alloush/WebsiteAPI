@@ -200,7 +200,6 @@ namespace Infrastructure.Data
             {
                 var name = new BlogSourceCategoryName
                 {
-                    Id = BlogCategorySourceNamesId[i],
                     Name = BlogCategorySourceNames[i]
                 };
                 await context.BlogSourceCategoryName.AddAsync(name);
