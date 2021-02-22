@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace API.ControllerServices.Blogs
 
     public class BlogService
     {
-        private const string BLOG_IMAGE_DIRECTORY = "/Uploads/Images/";
+        private string BLOG_IMAGE_DIRECTORY;
 
         private readonly UserManager<AppUser> _userManager;
         private readonly IGenericRepository<Blog> _blogRepo;
@@ -36,6 +37,7 @@ namespace API.ControllerServices.Blogs
         private readonly IMapper _mapper;
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IConfiguration _config;
 
         public BlogService(UserManager<AppUser> userManager,
                                 IGenericRepository<Blog> blogRepo,
@@ -47,7 +49,8 @@ namespace API.ControllerServices.Blogs
                                 IGenericRepository<BlogCategory> blogCategoryRepo,
                                 IMapper mapper,
                                 AppDbContext context,
-                                IWebHostEnvironment webHostEnvironment
+                                IWebHostEnvironment webHostEnvironment,
+                                IConfiguration config 
                                 )
         {
             _userManager = userManager;
@@ -61,6 +64,10 @@ namespace API.ControllerServices.Blogs
             _mapper = mapper;
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _config = config;
+
+            BLOG_IMAGE_DIRECTORY = _config["UploadsDir:Blogs:Images"];
+
         }
 
 
@@ -176,7 +183,7 @@ namespace API.ControllerServices.Blogs
                     }
                     // ************************************* add blog images
                     // the first image is Default
-                    var updated = await UploadFilesAndUpdateTableAsync(blog.Files, currentUser.Id, newBlog);
+                    var updated = await UploadFilesAndUpdateTableAsync(blog.Files, currentUser.Id, newBlog, BLOG_IMAGE_DIRECTORY);
                     if (!updated)
                         throw new Exception("Something Wrong! with Upload images");
 
@@ -254,7 +261,7 @@ namespace API.ControllerServices.Blogs
             if (!permission)
                 throw new Exception($"current User doesn't has a permation to update this blog");
 
-            var updated = await UploadFilesAndUpdateTableAsync(blogImage.Files, currentUser.Id, blog);
+            var updated = await UploadFilesAndUpdateTableAsync(blogImage.Files, currentUser.Id, blog, BLOG_IMAGE_DIRECTORY);
             if (!updated)
                 throw new Exception($"Something Wrong! with Upload images");
 
@@ -319,8 +326,16 @@ namespace API.ControllerServices.Blogs
         }
 
 
+        //***************************
 
-        private async Task<bool> UploadFilesAndUpdateTableAsync(IReadOnlyList<IFormFile> files, string userId, Blog blog)
+
+        /// <summary>
+        /// upload files to server
+        /// </summary>
+        /// <returns>
+        /// If ClaimsPrincipal httpContextUser = HttpContext.User; retrun an User Object 
+        /// else retrun null</returns> 
+        private async Task<bool> UploadFilesAndUpdateTableAsync(IReadOnlyList<IFormFile> files, string userId, Blog blog, string uploadsDir)
         {
             bool defaultImage = false;
 
@@ -339,13 +354,13 @@ namespace API.ControllerServices.Blogs
                         if (file != null && file.Length > 0)
                         {
                             // upload the image and return the new file name
-                            var fileName = await _uploadImageRepo.UploadFileAsync(file, _webHostEnvironment.WebRootPath + BLOG_IMAGE_DIRECTORY);
+                            var fileName = await _uploadImageRepo.UploadFileAsync(file, _webHostEnvironment.WebRootPath + uploadsDir);
                             if (!string.IsNullOrEmpty(fileName))
                             {
                                 var blogImage = new UploadBlogImagesList
                                 {
                                     Name = fileName,
-                                    Path = BLOG_IMAGE_DIRECTORY + fileName,
+                                    Path = uploadsDir + fileName,
                                     BlogId = blog.Id,
                                     Default = defaultImage,
                                     UserId = userId,
@@ -355,7 +370,7 @@ namespace API.ControllerServices.Blogs
                                 defaultImage = false;
 
                                 // to delete these files from the server if not successful to add the Blog
-                                uploadedFilesPath.Add(BLOG_IMAGE_DIRECTORY + fileName);
+                                uploadedFilesPath.Add(uploadsDir + fileName);
 
                                 // add BlogImagesList Model
                                 if (!await _uploadImageRepo.AddAsync(blogImage))
