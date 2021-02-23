@@ -17,10 +17,13 @@ namespace API.Controllers.Blogs
     public class BlogSourceCategoryNamesController : ControllerBase
     {
         private readonly IGenericRepository<BlogSourceCategoryName> _blogSourceCatNameRepo;
+        private readonly IGenericRepository<BlogCategoryList> _blogCategoryListRepo;
 
-        public BlogSourceCategoryNamesController(IGenericRepository<BlogSourceCategoryName> blogSourceCatNameRepo)
+        public BlogSourceCategoryNamesController(IGenericRepository<BlogSourceCategoryName> blogSourceCatNameRepo,
+                                                 IGenericRepository<BlogCategoryList> blogCategoryListRepo)
         {
             _blogSourceCatNameRepo = blogSourceCatNameRepo;
+            _blogCategoryListRepo = blogCategoryListRepo;
         }
 
         // GET: api/BlogCaregoryName/GetSourceBlogCategoryName
@@ -79,6 +82,11 @@ namespace API.Controllers.Blogs
             // check if this Source existing before
             var catSource = await _blogSourceCatNameRepo.ModelDetailsAsync(new GetBlogSourceCategoriesOrSourceCategoryByIdSpeci(id));
             if (catSource == null) return BadRequest(new ApiResponse(400, $"This category not existing!"));
+
+            // delete rows in BlogCategoryList with this Category source Name
+            var blogCatList = await _blogCategoryListRepo.ListAsync(new GetAllBlogCategorisListForThisCategorySpeci(id));
+            foreach (var blgCat in blogCatList)
+                await _blogCategoryListRepo.RemoveAsync(blgCat);
 
             if (await _blogSourceCatNameRepo.RemoveAsync(catSource))
                 if (await _blogSourceCatNameRepo.SaveChangesAsync())

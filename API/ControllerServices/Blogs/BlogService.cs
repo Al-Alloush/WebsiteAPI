@@ -135,7 +135,15 @@ namespace API.ControllerServices.Blogs
             _blog.BlogCategoriesList = _mapper.Map<IReadOnlyList<BlogCategoryList>, IReadOnlyList<BlogCategoryListDto>>(categories);
             //  and get their names in the blog language
             foreach (var cat in _blog.BlogCategoriesList)
-                cat.Name = (await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoryNameSpeci(cat.BlogCategoryId, blog.LanguageId))).Name;
+            {
+                // to check if this category exist in BlogCategories table
+                var catObject = await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoryNameSpeci(cat.BlogCategoryId, blog.LanguageId));
+                if (catObject != null)
+                    cat.Name = catObject.Name;
+
+                // else the defalult value is null
+            }
+                
 
             // get Blog's images;
             IReadOnlyList<UploadBlogImagesList> imagesList = await _uploadImageRepo.ListAsync(new GetImageByIdOrImagsByBlogIdSpeci(_blog.Id, true));
@@ -170,6 +178,11 @@ namespace API.ControllerServices.Blogs
                     // Add categories for this Blog
                     foreach (var id in _categoriesIds)
                     {
+                        // to check if this category exsit in BlogCategories table or not 
+                        var blogCatId = await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoryNameSpeci(id, newBlog.LanguageId));
+                        if(blogCatId == null)
+                            throw new Exception($"this category not exist in BlogCategories table");
+
                         // add new Category
                         var newCat = new BlogCategoryList { BlogId = newBlog.Id, BlogCategoryId = id };
                         if (!await _blogCategoryListRepo.AddAsync(newCat))
@@ -438,7 +451,22 @@ namespace API.ControllerServices.Blogs
             }
             return true;
         }
+
+
+
+        // to check if all categories are existing in database
+        private async Task<List<int>> CheckExistingCategories(string categories)
+        {
+            //check id category existing, example: Convert string "[1, 2, 3]" to int list
+            List<int> _categoriesIds = categories.Trim('[', ']').Split(',').Select(int.Parse).ToList();
+            foreach (var id in _categoriesIds)
+            {
+                // check if this Category existing in Category Source
+                var categorySource = await _blogSourceCategoryRepo.ModelDetailsAsync(new GetBlogSourceCategories(id));
+                if (categorySource == null)
+                    return null;
+            }
+            return _categoriesIds;
+        }
     }
-
-
 }

@@ -30,7 +30,7 @@ namespace Infrastructure.Data
         //
         public static string superAdmin_id;
         public static string DefPassword = "!QA1qa";
-        public static string UploadImageDir = "/Uploads/Images/";
+        public static string UploadUsersImageDir = "/Uploads/Users/Images/";
 
         //
         // first add the BlogCategoryName to be the parent of all BlogCategory in any languages
@@ -164,7 +164,7 @@ namespace Infrastructure.Data
                     var userImage = new UploadUserImagesList
                     {
                         Name = imgName[i],
-                        Path = UploadImageDir + imgName[i] + ".jpg",
+                        Path = UploadUsersImageDir + imgName[i] + ".jpg",
                         UserId = superAdmin_id,
                         Default = def,
                         UploadTypeId = typ
