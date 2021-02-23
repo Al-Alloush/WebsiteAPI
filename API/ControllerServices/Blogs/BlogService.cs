@@ -438,7 +438,22 @@ namespace API.ControllerServices.Blogs
             }
             return true;
         }
+
+
+
+        // to check if all categories are existing in database
+        private async Task<List<int>> CheckExistingCategories(string categories)
+        {
+            //check id category existing, example: Convert string "[1, 2, 3]" to int list
+            List<int> _categoriesIds = categories.Trim('[', ']').Split(',').Select(int.Parse).ToList();
+            foreach (var id in _categoriesIds)
+            {
+                // check if this Category existing in Category Source
+                var categorySource = await _blogSourceCategoryRepo.ModelDetailsAsync(new GetBlogSourceCategories(id));
+                if (categorySource == null)
+                    return null;
+            }
+            return _categoriesIds;
+        }
     }
-
-
 }

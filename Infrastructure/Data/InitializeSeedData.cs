@@ -19,6 +19,9 @@ namespace Infrastructure.Data
         private static CultureInfo MyCultureInfo = new CultureInfo("de-DE");
         private static string[] DefLanguageCodeId = InitializeDefaultData.DefLanguageCodeId;
 
+        private static string UploadBlogImageDir = "/Uploads/Blogs/Images/";
+        public static string UploadUsersImageDir = "/Uploads/Users/Images/";
+
         public static async Task AddSeedUsersData(IServiceProvider services)
         {
 
@@ -91,7 +94,7 @@ namespace Infrastructure.Data
                 {
 
                     Name = "user (" + imgNum + "): " + random.Next(1, 100000),
-                    Path = "/Uploads/Images/user (" + imgNum + ").jpg",
+                    Path = UploadUsersImageDir + "user (" + imgNum + ").jpg",
                     UserId = users[i].Id,
                     Default = true,
                     UploadTypeId = 1
@@ -211,9 +214,9 @@ namespace Infrastructure.Data
             var context = services.GetRequiredService<AppDbContext>();
             Random random = new Random();
 
-            // Add Blogs --------------------------------------------------
-            var users = await context.Users.ToListAsync();
-            foreach (var user in users)
+            // Add Blogs by Admins --------------------------------------------------
+            var admins = await context.Users.Where(u=>u.UserName.Contains("admin") || u.UserName.Contains("editor")).ToListAsync();
+            foreach (var admin in admins)
             {
                 for (int n = 0; n < 10; n++)
                 {
@@ -280,8 +283,8 @@ namespace Infrastructure.Data
                             AtTop = top,
                             ReleaseDate = daterelase,
                             LanguageId = lngId,
-                            UserId = user.Id,
-                            UserModifiedId = user.Id,
+                            UserId = admin.Id,
+                            UserModifiedId = admin.Id,
                             AddedDateTime = DateTime.Now,
                             ModifiedDate = DateTime.Now
                         };
@@ -326,10 +329,10 @@ namespace Infrastructure.Data
                 for (int rep = 1; rep <= repNumber; rep++)
                 {
 
-                    var blogImage = new UploadBlogImagesList
+                       var blogImage = new UploadBlogImagesList
                     {
                         Name = "img (" + indexImage + "_" + rep + ")",
-                        Path = "/Uploads/Images/img (" + indexImage + ").jfif",
+                        Path = UploadBlogImageDir+ "img(" + indexImage + ").jfif",
                         BlogId = blog.Id,
                         Default = defaultImage,
                         UserId = blog.UserId,
@@ -342,38 +345,36 @@ namespace Infrastructure.Data
             }
             await context.SaveChangesAsync();
 
+            // Add Comments and Likes by visitors --------------------------------------------------
+            var users = await context.Users.Where(u => u.UserName.Contains("visitor")).ToListAsync();
             // add like and dislike
             foreach (var user in users)
             {
                 // like/dislike number for this user
                 var repeatedNum = random.Next(1, blogs.Count()/3);
-                // to be sure the blog id is not repeated for every user
-                var blogIdsList = new List<int>();
                 for (int i = 0; i < repeatedNum; i++)
                 {
                     var like = true;
                     var dislike = false;
                     // select random Blog
                     var randomBlog = blogs[random.Next(1, blogs.Count())];
-                    // if this blog not selected before
-                    if (!blogIdsList.Contains(randomBlog.Id))
+                    if (random.Next(0, 6) < 3)
                     {
-                        if (random.Next(0, 6) < 3)
-                        {
-                            like = false;
-                            dislike = true;
-                        }
-                        var likeDislike = new BlogLike
-                        {
-                            Like = like,
-                            Dislike = dislike,
-                            AddedDateTime = DateTime.Now,
-                            BlogId = randomBlog.Id,
-                            UserId = user.Id
-                        };
-                        blogIdsList.Add(randomBlog.Id);
-                        await context.BlogLike.AddAsync(likeDislike);
-
+                        like = false;
+                        dislike = true;
+                    }
+                    var likeDislike = new BlogLike
+                    {
+                        Like = like,
+                        Dislike = dislike,
+                        AddedDateTime = DateTime.Now,
+                        BlogId = randomBlog.Id,
+                        UserId = user.Id
+                    };
+                    await context.BlogLike.AddAsync(likeDislike);
+                    
+                    if (random.Next(0, 6) < 3)
+                    {
                         var comment = new BlogComment
                         {
                             AddedDateTime = DateTime.Now,
