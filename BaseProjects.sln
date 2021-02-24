@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitTestAPI", "XUnitTestAPI\XUnitTestAPI.csproj", "{E43E6FCF-22FF-4FE4-9624-A19E940634D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{0EAD16C8-939E-4E0B-975A-EFD19A762F63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EAD16C8-939E-4E0B-975A-EFD19A762F63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EAD16C8-939E-4E0B-975A-EFD19A762F63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E43E6FCF-22FF-4FE4-9624-A19E940634D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E43E6FCF-22FF-4FE4-9624-A19E940634D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E43E6FCF-22FF-4FE4-9624-A19E940634D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E43E6FCF-22FF-4FE4-9624-A19E940634D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

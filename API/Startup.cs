@@ -4,6 +4,7 @@ using API.Extensions.ApiServices;
 using AutoMapper;
 using Core.Helppers;
 using Core.Interfaces.Repository;
+using Core.Interfaces.Repository.Blogs;
 using Infrastructure.Data;
 using Infrastructure.Data.Services;
 using Infrastructure.Repositories;
@@ -61,6 +62,7 @@ namespace API
 
             // add all Repositories:
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped(typeof(IBlogCategoryRepository), typeof(BlogCategoryRepository));
 
             services.AddScoped<BlogService>();
             services.AddScoped<BlogCategoryService>();

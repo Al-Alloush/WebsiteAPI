@@ -22,11 +22,12 @@ namespace API.Controllers.Blogs
     public class BlogCategoryController : ControllerBase
     {
         private readonly BlogCategoryService _blogCatService;
+        private readonly IMapper _mapper;
 
-
-        public BlogCategoryController(BlogCategoryService blogCatService)
+        public BlogCategoryController(BlogCategoryService blogCatService, IMapper mapper)
         {
             _blogCatService = blogCatService;
+            _mapper = mapper;
         }
 
         // GET: api/BlogCaregory/
@@ -34,42 +35,45 @@ namespace API.Controllers.Blogs
         public async Task<IReadOnlyList<BlogCategoryDto>> ReadBlogCategories()
         {
             var cats =  await _blogCatService.ReadBlogCategoriesAsync();
-            return cats;
+            var _cats = _mapper.Map<IReadOnlyList<BlogCategory>, IReadOnlyList<BlogCategoryDto>>(cats);
+            return _cats;
         }
 
         [HttpGet("ReadBlogCategoriesBylangId")]
         public async Task<IReadOnlyList<BlogCategoryDto>> ReadBlogCategories(string langId)
         {
             var cats = await _blogCatService.ReadBlogCategoriesAsync(langId);
-            return cats;
+            var _cats = _mapper.Map<IReadOnlyList<BlogCategory>, IReadOnlyList<BlogCategoryDto>>(cats);
+            return _cats;
         }
 
         [HttpGet("ReadBlogCategory")]
-        public async Task<BlogCategoryDto> ReadBlogCategories( int id, string langId)
+        public async Task<BlogCategoryDto> ReadBlogCategories(int id, string langId)
         {
             var cat = await _blogCatService.ReadBlogCategoriesAsync(id, langId);
-            return cat;
+            var _cat = _mapper.Map<BlogCategory, BlogCategoryDto>(cat);
+            return _cat;
         }
 
-        [HttpPost("CreateBlogCategory")]
-        public async Task<ActionResult<string>> CreateBlogCategory([FromForm] int sourceCateId, [FromForm] string langId, [FromForm] string name)
-        {
-            var status = await _blogCatService.CreateBlogCategoryAsync(sourceCateId, langId, name);
-            return status;
-        }
+        //[HttpPost("CreateBlogCategory")]
+        //public async Task<ActionResult<string>> CreateBlogCategory([FromForm] int sourceCateId, [FromForm] string langId, [FromForm] string name)
+        //{
+        //    var status = await _blogCatService.CreateBlogCategoryAsync(sourceCateId, langId, name);
+        //    return status;
+        //}
 
-        [HttpPut("UpdateCategoryName")]
-        public async Task<ActionResult<string>> UpdateCategoryName([FromForm] int sourceCateId, [FromForm] string langId, [FromForm] string newName)
-        {
-            var status = await _blogCatService.UpdateCategoryNameAsync(sourceCateId, langId, newName);
-            return status;
-        }
+        //[HttpPut("UpdateCategoryName")]
+        //public async Task<ActionResult<string>> UpdateCategoryName([FromForm] int sourceCateId, [FromForm] string langId, [FromForm] string newName)
+        //{
+        //    var status = await _blogCatService.UpdateCategoryNameAsync(sourceCateId, langId, newName);
+        //    return status;
+        //}
 
-        [HttpDelete("DeleteBlogCategory")]
-        public async Task<ActionResult<string>> DeleteSourceCategoryName([FromForm] int sourceCateId, [FromForm] string langId)
-        {
-            var status = await _blogCatService.DeleteSourceCategoryNameAsync(sourceCateId, langId);
-            return status;
-        }
+        //[HttpDelete("DeleteBlogCategory")]
+        //public async Task<ActionResult<string>> DeleteSourceCategoryName([FromForm] int sourceCateId, [FromForm] string langId)
+        //{
+        //    var status = await _blogCatService.DeleteSourceCategoryNameAsync(sourceCateId, langId);
+        //    return status;
+        //}
     }
 }
