@@ -8,6 +8,7 @@ using Core.Interfaces.Repository.Blogs;
 using Infrastructure.Data;
 using Infrastructure.Data.Services;
 using Infrastructure.Repositories;
+using Infrastructure.Repositories.Blogs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;

@@ -1,6 +1,5 @@
 ﻿using Core.Interfaces.Repository.Blogs;
 using Core.Models.Blogs;
-using Core.Specifications.Blogs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -37,20 +36,30 @@ namespace API.ControllerServices.Blogs
             return cat;
         }
 
+        public async Task<BlogCategory> ReadBlogCategoriesAsync(int sourceCategoryNameId, string langId, string name)
+        {
+            var cat = await _blogCategoryRepo.ModelBySourceCatIdAndLangIdAsync(sourceCategoryNameId, langId, name);
+            return cat;
+        }
 
-        //public async Task<ActionResult<string>> CreateBlogCategoryAsync( int sourceCateId,  string langId, string name)
-        //{
 
-        //    // check if this Source Name existing before
-        //    var sourceName = await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoriesOrBlogCategoryByIdSpeci(sourceCateId, langId, name));
-        //    if (sourceName != null) return null;
+        public async Task<bool> CreateBlogCategoryAsync(int sourceCateId, string langId, string name)
+        {
+            // create new BlogCategory Model
+            var newCategory = new BlogCategory
+            {
+                SourceCategoryId = sourceCateId,
+                LanguageId = langId,
+                Name = name
+            };
 
-        //    if (await _blogCategoryRepo.AddAsync(new BlogCategory { SourceCategoryId = sourceCateId, LanguageId = langId, Name = name }))
-        //        if (await _blogCategoryRepo.SaveChangesAsync())
-        //            return $"create Blog's Category /{name}/ Successfully";
+            if (await _blogCategoryRepo.AddAsync(newCategory))
+                if (await _blogCategoryRepo.SaveChangesAsync())
+                    return true;
 
-        //    throw new Exception ($"Create new Blog's Category, somthing wrong!");
-        //}
+            return false;
+        }
+
 
 
         //public async Task<ActionResult<string>> UpdateCategoryNameAsync( int sourceCateId, string langId, string newName)

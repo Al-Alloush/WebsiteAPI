@@ -13,5 +13,11 @@ namespace Core.Interfaces.Repository.Blogs
         Task<IReadOnlyList<BlogCategory>> ListByLanguageIdAsync(string langId);
 
         Task<BlogCategory> ModelBySourceCatIdAndLangIdAsync(int sourceCategoryNameId, string langId);
+
+        Task<BlogCategory> ModelBySourceCatIdAndLangIdAsync(int sourceCategoryNameId, string langId, string name);
+
+        Task<bool> AddAsync(BlogCategory category);
+
+        Task<bool> SaveChangesAsync();
     }
 }

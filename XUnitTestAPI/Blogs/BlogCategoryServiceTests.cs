@@ -1,15 +1,8 @@
 ﻿using API.ControllerServices.Blogs;
-using AutoMapper;
-using Core.Dtos.Blogs;
-using Core.Interfaces.Repository;
 using Core.Interfaces.Repository.Blogs;
 using Core.Models.Blogs;
-using Core.Specifications;
-using Core.Specifications.Blogs;
 using Moq;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -27,7 +20,7 @@ namespace XUnitTestAPI.Blogs
 
 
         [Fact]
-        public async Task ReadBlogCategoriesAsync__ShouldReturnIReadOnlyListBlogCategory_WhenBlogCategoriesExists()
+        public async Task ReadBlogCategoriesAsync_ReturnIReadOnlyListBlogCategory_WhenBlogCategoriesExists()
         {
             // Arrange
             // add list of BlogCategories
@@ -64,7 +57,7 @@ namespace XUnitTestAPI.Blogs
         }
 
         [Fact]
-        public async Task ReadBlogCategoriesAsync__ShouldReturnIReadOnlyListBlogCategories_WhenBlogCategoriesExists_ByLanguageId()
+        public async Task ReadBlogCategoriesAsync_ByLanguageId_ReturnIReadOnlyListBlogCategories_WhenBlogCategoriesExists()
         {
 
             // Arrange
@@ -97,7 +90,8 @@ namespace XUnitTestAPI.Blogs
 
         }
 
-        public async Task ReadBlogCategoriesAsync__ShouldReturnOneBlogCategoryWhenBlogCategoryExists_BySourceCategoryIdAndByLanguageId()
+        [Fact]
+        public async Task ReadBlogCategoriesAsync_BySourceCatId_And_LanguageId_ReturnOneBlogCategoryWhenBlogCategoryExists()
         {
             // Arrange
             var catName = "Travel";
@@ -122,6 +116,102 @@ namespace XUnitTestAPI.Blogs
             Assert.Equal(categoyExist.Name, catName);
             Assert.Null(categoyNotExist); // if the Categaory not exitst in this language return null
 
+        }
+
+        [Fact]
+        public async Task ReadBlogCategoriesAsync_BySourceCatId_And_LanguageId_And_Name_ReturnOneBlogCategoryWhenBlogCategoryExists()
+        {
+            // Arrange
+            var catName = "Travel";
+            var catSourcesCatId = 5;
+            var langId = "en";
+            var langIdNotExist = "ar";
+            var cate = new BlogCategory
+            {
+                Id = 1,
+                Name = catName,
+                SourceCategoryId = catSourcesCatId,
+                LanguageId = langId
+            };
+
+            // Act
+            _blogCategoryRepoMock.Setup(x => x.ModelBySourceCatIdAndLangIdAsync(catSourcesCatId, langId, catName)).ReturnsAsync(cate);
+            var categoyExist = await _bcs.ReadBlogCategoriesAsync(catSourcesCatId, langId, catName);
+            var categoyNotExist = await _bcs.ReadBlogCategoriesAsync(catSourcesCatId, langIdNotExist, "Sport");
+
+            // Assert
+            Assert.Equal(categoyExist.LanguageId, langId);
+            Assert.Equal(categoyExist.Name, catName);
+            Assert.Null(categoyNotExist); // if the Categaory not exitst in this language return null
+
+        }
+
+        [Fact]
+        public async Task CreateBlogCategoryAsync_IfAddAsyncAndSaveChangesAsyncSuccess_ReturnTrue()
+        {
+            // Arrange
+            var catName = "Travel";
+            var catSourcesCatId = 5;
+            var langId = "en";
+
+            // Act
+            _blogCategoryRepoMock.Setup(x => x.AddAsync(It.IsAny<BlogCategory>())).ReturnsAsync(true);
+            _blogCategoryRepoMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
+            var resultAddNewCat = await _bcs.CreateBlogCategoryAsync(catSourcesCatId, langId, catName);
+
+            // Assert
+            Assert.True(resultAddNewCat);
+        }
+
+        [Fact]
+        public async Task CreateBlogCategoryAsync_IfAddAsyncAndSaveChangesAsyncFailed_ReturnFalse()
+        {
+            // Arrange
+            var catName = "Travel";
+            var catSourcesCatId = 5;
+            var langId = "en";
+
+            // Act
+            _blogCategoryRepoMock.Setup(x => x.AddAsync(It.IsAny<BlogCategory>())).ReturnsAsync(false);
+            _blogCategoryRepoMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(false);
+            var resultAddNewCat = await _bcs.CreateBlogCategoryAsync(catSourcesCatId, langId, catName);
+
+            // Assert
+            Assert.False(resultAddNewCat);
+        }
+
+        [Fact]
+        public async Task CreateBlogCategoryAsync_IfAddAsyncSucessAndSaveChangesAsyncFailed_ReturnFalse()
+        {
+            // Arrange
+            var catName = "Travel";
+            var catSourcesCatId = 5;
+            var langId = "en";
+
+            // Act
+            _blogCategoryRepoMock.Setup(x => x.AddAsync(It.IsAny<BlogCategory>())).ReturnsAsync(true);
+            _blogCategoryRepoMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(false);
+            var resultAddNewCat = await _bcs.CreateBlogCategoryAsync(catSourcesCatId, langId, catName);
+
+            // Assert
+            Assert.False(resultAddNewCat);
+        }
+
+        [Fact]
+        public async Task CreateBlogCategoryAsync_IfAddAsyncFaildAndSaveChangesAsyncSuccess_ReturnFalse()
+        {
+            // Arrange
+            var catName = "Travel";
+            var catSourcesCatId = 5;
+            var langId = "en";
+
+            // Act
+            _blogCategoryRepoMock.Setup(x => x.AddAsync(It.IsAny<BlogCategory>())).ReturnsAsync(false);
+            _blogCategoryRepoMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
+            var resultAddNewCat = await _bcs.CreateBlogCategoryAsync(catSourcesCatId, langId, catName);
+
+            // Assert
+            Assert.False(resultAddNewCat);
         }
     }
 }

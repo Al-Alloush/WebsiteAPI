@@ -55,12 +55,20 @@ namespace API.Controllers.Blogs
             return _cat;
         }
 
-        //[HttpPost("CreateBlogCategory")]
-        //public async Task<ActionResult<string>> CreateBlogCategory([FromForm] int sourceCateId, [FromForm] string langId, [FromForm] string name)
-        //{
-        //    var status = await _blogCatService.CreateBlogCategoryAsync(sourceCateId, langId, name);
-        //    return status;
-        //}
+        [HttpPost("CreateBlogCategory")]
+        public async Task<ActionResult<string>> CreateBlogCategory([FromForm] int sourceCateId, [FromForm] string langId, [FromForm] string name)
+        {
+            // check if this Blogcategory exist or not
+            var category = await _blogCatService.ReadBlogCategoriesAsync(sourceCateId, langId, name);
+            if (category != null) return BadRequest(new ApiResponse(400, "this Category exsist before"));
+
+
+            var status = await _blogCatService.CreateBlogCategoryAsync(sourceCateId, langId, name);
+            if (status)
+                return $"create Blog's Category /{name}/ Successfully";
+
+            throw new Exception($"something wrong!, with Add and Save changes for new BlogsCategory");
+        }
 
         //[HttpPut("UpdateCategoryName")]
         //public async Task<ActionResult<string>> UpdateCategoryName([FromForm] int sourceCateId, [FromForm] string langId, [FromForm] string newName)
