@@ -31,7 +31,7 @@ namespace API.Controllers.Blogs
         }
 
         // GET: api/BlogCaregory/
-        [HttpGet("ReadBlogCategories")]
+        [HttpGet("AllBlogCategories")]
         public async Task<IReadOnlyList<BlogCategoryDto>> ReadBlogCategories()
         {
             var cats =  await _blogCatService.ReadBlogCategoriesAsync();
@@ -39,7 +39,15 @@ namespace API.Controllers.Blogs
             return _cats;
         }
 
-        [HttpGet("ReadBlogCategoriesBylangId")]
+        [HttpGet("BlogCategoriesBy_sourceCatId")]
+        public async Task<IReadOnlyList<BlogCategoryDto>> ReadBlogCategories(int sourceCatId)
+        {
+            var cats = await _blogCatService.ReadBlogCategoriesAsync(sourceCatId);
+            var _cats = _mapper.Map<IReadOnlyList<BlogCategory>, IReadOnlyList<BlogCategoryDto>>(cats);
+            return _cats;
+        }
+
+        [HttpGet("BlogCategoriesBy_langId")]
         public async Task<IReadOnlyList<BlogCategoryDto>> ReadBlogCategories(string langId)
         {
             var cats = await _blogCatService.ReadBlogCategoriesAsync(langId);
@@ -47,10 +55,18 @@ namespace API.Controllers.Blogs
             return _cats;
         }
 
-        [HttpGet("ReadBlogCategory")]
-        public async Task<BlogCategoryDto> ReadBlogCategories(int id, string langId)
+        [HttpGet("BlogCategoriesBy_langId_SourceCatId")]
+        public async Task<IReadOnlyList<BlogCategoryDto>> ReadBlogCategories(int sourceCatId, string langId)
         {
-            var cat = await _blogCatService.ReadBlogCategoriesAsync(id, langId);
+            var cats = await _blogCatService.ReadBlogCategoriesAsync(sourceCatId, langId);
+            var _cats = _mapper.Map<IReadOnlyList<BlogCategory>, IReadOnlyList<BlogCategoryDto>>(cats);
+            return _cats;
+        }
+
+        [HttpGet("BlogCategory")]
+        public async Task<BlogCategoryDto> ReadBlogCategoriesById(int id)
+        {
+            var cat = await _blogCatService.ReadBlogCategoryByIdAsync(id);
             var _cat = _mapper.Map<BlogCategory, BlogCategoryDto>(cat);
             return _cat;
         }
@@ -70,18 +86,33 @@ namespace API.Controllers.Blogs
             throw new Exception($"something wrong!, with Add and Save changes for new BlogsCategory");
         }
 
-        //[HttpPut("UpdateCategoryName")]
-        //public async Task<ActionResult<string>> UpdateCategoryName([FromForm] int sourceCateId, [FromForm] string langId, [FromForm] string newName)
-        //{
-        //    var status = await _blogCatService.UpdateCategoryNameAsync(sourceCateId, langId, newName);
-        //    return status;
-        //}
+        [HttpPut("UpdateCategoryName")]
+        public async Task<ActionResult<string>> UpdateCategoryName([FromForm] int id, [FromForm] int newSourceCateId, [FromForm] string newLangId, [FromForm] string newName)
+        {
 
-        //[HttpDelete("DeleteBlogCategory")]
-        //public async Task<ActionResult<string>> DeleteSourceCategoryName([FromForm] int sourceCateId, [FromForm] string langId)
-        //{
-        //    var status = await _blogCatService.DeleteSourceCategoryNameAsync(sourceCateId, langId);
-        //    return status;
-        //}
+            // check if this Blogcategory exist or not
+            var category = await _blogCatService.ReadBlogCategoryByIdAsync(id);
+            if (category == null) return BadRequest(new ApiResponse(400, "this Category not exsist"));
+
+            var status = await _blogCatService.UpdateBlogCategoryAsync(category, newSourceCateId, newLangId, newName);
+            if (status)
+                return $"Update Blog's Category Successfully";
+
+            throw new Exception($"something wrong!, with Updating a BlogsCategory");
+        }
+
+        [HttpDelete("DeleteBlogCategory")]
+        public async Task<ActionResult<string>> DeleteSourceCategoryName( int id)
+        {
+            // check if this Blogcategory exist or not
+            var category = await _blogCatService.ReadBlogCategoryByIdAsync(id);
+            if (category == null) return BadRequest(new ApiResponse(400, "this Category not exsist"));
+
+            var status = await _blogCatService.DeleteSourceCategoryNameAsync(category);
+            if (status)
+                return $"Delete Blog's Category Successfully";
+
+            throw new Exception($"something wrong!, with deleting a BlogsCategory");
+        }
     }
 }

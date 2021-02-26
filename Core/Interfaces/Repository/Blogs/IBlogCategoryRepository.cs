@@ -10,13 +10,21 @@ namespace Core.Interfaces.Repository.Blogs
     {
         Task<IReadOnlyList<BlogCategory>> ListAsync();
 
-        Task<IReadOnlyList<BlogCategory>> ListByLanguageIdAsync(string langId);
+        Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId);
 
-        Task<BlogCategory> ModelBySourceCatIdAndLangIdAsync(int sourceCategoryNameId, string langId);
+        Task<IReadOnlyList<BlogCategory>> ListAsync(string langId);
 
-        Task<BlogCategory> ModelBySourceCatIdAndLangIdAsync(int sourceCategoryNameId, string langId, string name);
+        Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId, string langId);
+
+        Task<BlogCategory> ModelAsync(int id);
+
+        Task<BlogCategory> ModelAsync(int sourceCatId, string langId, string name);
 
         Task<bool> AddAsync(BlogCategory category);
+
+        Task<bool> UpdateAsync(BlogCategory category);
+
+        Task<bool> RemoveAsync(BlogCategory category);
 
         Task<bool> SaveChangesAsync();
     }

@@ -3,6 +3,7 @@ using Core.Interfaces.Repository.Blogs;
 using Core.Models.Blogs;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,16 @@ namespace Infrastructure.Repositories.Blogs
             return categories;
         }
 
-        public async Task<IReadOnlyList<BlogCategory>> ListByLanguageIdAsync(string langId)
+        public async Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId)
+        {
+            var categories = await _context.BlogCategory.Include(b => b.Language)
+                                                        .Where(c => c.SourceCategoryId == sourceCatId)
+                                                        .OrderBy(c => c.SourceCategoryId)
+                                                        .ToListAsync();
+            return categories;
+        }
+
+        public async Task<IReadOnlyList<BlogCategory>> ListAsync(string langId)
         {
             var categories = await _context.BlogCategory.Include(b => b.Language)
                                                         .Where(c => c.LanguageId == langId)
@@ -39,35 +49,95 @@ namespace Infrastructure.Repositories.Blogs
             return categories;
         }
 
-        public async Task<BlogCategory> ModelBySourceCatIdAndLangIdAsync(int sourceCategoryNameId, string langId)
+        public async Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId, string langId)
+        {
+            var categories = await _context.BlogCategory.Include(b => b.Language)
+                                                        .Where(c => c.SourceCategoryId == sourceCatId && c.LanguageId == langId)
+                                                        .OrderBy(c => c.SourceCategoryId)
+                                                        .ToListAsync();
+            return categories;
+        }
+
+
+        public async Task<BlogCategory> ModelAsync(int id)
         {
             var category = await _context.BlogCategory.Include(b => b.Language)
-                                                      .Where(c => c.SourceCategoryId == sourceCategoryNameId && c.LanguageId == langId)
+                                                      .Where(c => c.Id == id)
                                                       .FirstOrDefaultAsync();
             return category;
         }
 
-        public async Task<BlogCategory> ModelBySourceCatIdAndLangIdAsync(int sourceCategoryNameId, string langId, string name)
+        public async Task<BlogCategory> ModelAsync(int sourceCatId, string langId, string name)
         {
             var category = await _context.BlogCategory.Include(b => b.Language)
-                                                     .Where(c => c.SourceCategoryId == sourceCategoryNameId && c.LanguageId == langId && c.Name == name)
+                                                     .Where(c => c.SourceCategoryId == sourceCatId && c.LanguageId == langId && c.Name == name)
                                                      .FirstOrDefaultAsync();
             return category;
         }
 
         public async Task<bool> AddAsync(BlogCategory category)
         {
-            var result = await _context.AddAsync(category);
-            if (result.State.ToString() == "Added")
-                return true;
-            else
+            try
+            {
+                var result = await _context.AddAsync(category);
+                if (result.State.ToString() == "Added")
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception)
+            {
                 return false;
+            }
+
+            
+        }
+
+        public async Task<bool> UpdateAsync(BlogCategory category)
+        {
+            try
+            {
+                _context.Set<BlogCategory>().Attach(category);
+                _context.Entry(category).State = EntityState.Modified;
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> RemoveAsync(BlogCategory category)
+        {
+            try
+            {
+                EntityEntry<BlogCategory> result = _context.Remove(category);
+                if (result.State.ToString() == "Deleted")
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public async Task<bool> SaveChangesAsync()
         {
-            // if _context.SaveChangesAsync() bigger than 0 (if success equel 1)  return true (Success Save changes)
-            return await _context.SaveChangesAsync() > 0;
+            try
+            {
+                // if _context.SaveChangesAsync() bigger than 0 (if success equel 1)  return true (Success Save changes)
+                var result = await _context.SaveChangesAsync();
+                if (result > 0)
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
