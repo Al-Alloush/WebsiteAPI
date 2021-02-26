@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Repository.Blogs
 {
-    public interface IBlogCategoryRepository
+    public interface IBlogCategoryRepository : IBaseRepository<BlogCategory>
     {
-        Task<IReadOnlyList<BlogCategory>> ListAsync();
 
         Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId);
 
@@ -19,13 +18,5 @@ namespace Core.Interfaces.Repository.Blogs
         Task<BlogCategory> ModelAsync(int id);
 
         Task<BlogCategory> ModelAsync(int sourceCatId, string langId, string name);
-
-        Task<bool> AddAsync(BlogCategory category);
-
-        Task<bool> UpdateAsync(BlogCategory category);
-
-        Task<bool> RemoveAsync(BlogCategory category);
-
-        Task<bool> SaveChangesAsync();
     }
 }

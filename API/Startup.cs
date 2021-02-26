@@ -64,6 +64,7 @@ namespace API
             // add all Repositories:
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped(typeof(IBlogCategoryRepository), typeof(BlogCategoryRepository));
+            services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
             services.AddScoped<BlogService>();
             services.AddScoped<BlogCategoryService>();
