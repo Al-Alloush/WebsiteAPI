@@ -1,12 +1,15 @@
 using API.ControllerServices.Blogs;
 using API.ErrorsHandlers;
 using API.Extensions.ApiServices;
+using API.Extensions.Repositories;
 using AutoMapper;
 using Core.Helppers;
 using Core.Interfaces.Repository;
+using Core.Interfaces.Repository.Blogs;
 using Infrastructure.Data;
 using Infrastructure.Data.Services;
 using Infrastructure.Repositories;
+using Infrastructure.Repositories.Blogs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -59,11 +62,11 @@ namespace API
             // to use EmailSmsSender Service in API project
             services.AddScoped<EmailSmsSenderService>();
 
-            // add all Repositories:
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            // add all Repositories Scoped:
+            services.AddRepositoriesScoped();
 
-            services.AddScoped<BlogService>();
-            services.AddScoped<BlogCategoryService>();
+            // add all Contoller Services
+            services.AddContollersServicesScoped();
 
         }
 

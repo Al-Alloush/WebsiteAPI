@@ -1,10 +1,5 @@
-﻿using AutoMapper;
-using Core.Dtos.Blogs;
-using Core.Interfaces.Repository;
+﻿using Core.Interfaces.Repository.Blogs;
 using Core.Models.Blogs;
-using Core.Specifications.Blogs;
-using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -12,83 +7,93 @@ namespace API.ControllerServices.Blogs
 {
     public class BlogCategoryService
     {
+        private readonly IBlogCategoryRepository _blogCategoryRepo;
 
-        private readonly IGenericRepository<BlogCategory> _blogCategoryRepo;
-        private readonly IMapper _mapper;
 
-        public BlogCategoryService(IGenericRepository<BlogCategory> blogCategoryRepo,
-                                      IMapper mapper)
+        public BlogCategoryService(IBlogCategoryRepository blogCategoryRepo)
         {
             _blogCategoryRepo = blogCategoryRepo;
-            _mapper = mapper;
         }
 
-        public async Task<IReadOnlyList<BlogCategoryDto>> ReadBlogCategoriesAsync()
+        public async Task<IReadOnlyList<BlogCategory>> ReadBlogCategoriesAsync()
         {
-            var cats = await _blogCategoryRepo.ListAsync(new GetBlogCategoriesOrBlogCategoryByIdSpeci());
-            var _cats = _mapper.Map<IReadOnlyList<BlogCategory>, IReadOnlyList<BlogCategoryDto>>(cats);
-            return _cats;
+            var cats = await _blogCategoryRepo.ListAsync();
+            return cats;
+        }
+
+        public async Task<IReadOnlyList<BlogCategory>> ReadBlogCategoriesAsync(int sourceCatId)
+        {
+            var cats = await _blogCategoryRepo.ListAsync(sourceCatId);
+
+            return cats;
+        }
+
+        public async Task<IReadOnlyList<BlogCategory>> ReadBlogCategoriesAsync(string langId)
+        {
+            var cats = await _blogCategoryRepo.ListAsync(langId);
+
+            return cats;
+        }
+
+        public async Task<IReadOnlyList<BlogCategory>> ReadBlogCategoriesAsync(int sourceCatId, string langId)
+        {
+            var cats = await _blogCategoryRepo.ListAsync(sourceCatId, langId);
+
+            return cats;
+        }
+
+        public async Task<BlogCategory> ReadBlogCategoryByIdAsync(int id)
+        {
+            var cat = await _blogCategoryRepo.ModelAsync(id);
+
+            return cat;
+        }
+
+        public async Task<BlogCategory> ReadBlogCategoriesAsync(int sourceCatId, string langId, string name)
+        {
+            var cat = await _blogCategoryRepo.ModelAsync(sourceCatId, langId, name);
+            return cat;
         }
 
 
-        public async Task<IReadOnlyList<BlogCategoryDto>> ReadBlogCategoriesAsync(string langId)
+        public async Task<bool> CreateBlogCategoryAsync(int sourceCateId, string langId, string name)
         {
-            var cats = await _blogCategoryRepo.ListAsync(new GetBlogCategoriesOrBlogCategoryByIdSpeci(langId));
-            var _cats = _mapper.Map<IReadOnlyList<BlogCategory>, IReadOnlyList<BlogCategoryDto>>(cats);
-            return _cats;
-        }
+            // create new BlogCategory Model
+            var newCategory = new BlogCategory
+            {
+                SourceCategoryId = sourceCateId,
+                LanguageId = langId,
+                Name = name
+            };
 
-
-        public async Task<BlogCategoryDto> ReadBlogCategoriesAsync(int id, string langId)
-        {
-            var cat = await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoriesOrBlogCategoryByIdSpeci(id, langId));
-            var _cat = _mapper.Map<BlogCategory, BlogCategoryDto>(cat);
-            return _cat;
-        }
-
-
-        public async Task<ActionResult<string>> CreateBlogCategoryAsync( int sourceCateId,  string langId, string name)
-        {
-            // check if this Source Name existing before
-            var sourceName = await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoriesOrBlogCategoryByIdSpeci(sourceCateId, langId, name));
-            if (sourceName != null) return null;
-
-            if (await _blogCategoryRepo.AddAsync(new BlogCategory { SourceCategoryId = sourceCateId, LanguageId = langId, Name = name }))
+            if (await _blogCategoryRepo.AddAsync(newCategory))
                 if (await _blogCategoryRepo.SaveChangesAsync())
-                    return $"create Blog's Category /{name}/ Successfully";
+                    return true;
 
-            throw new Exception ($"Create new Blog's Category, somthing wrong!");
+            return false;
         }
 
-
-        public async Task<ActionResult<string>> UpdateCategoryNameAsync( int sourceCateId, string langId, string newName)
+        public async Task<bool> UpdateBlogCategoryAsync(BlogCategory category, int newSourceCateId, string newLangId, string newName)
         {
-            // check if this Source existing before
-            var catSource = await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoriesOrBlogCategoryByIdSpeci(sourceCateId, langId));
-            if (catSource == null) return null;
+            category.Name = newName;
+            category.SourceCategoryId = newSourceCateId;
+            category.LanguageId = newLangId;
 
-            // get old name
-            var oldName = catSource.Name;
-
-            catSource.Name = newName;
-            if (await _blogCategoryRepo.UpdateAsync(catSource))
+            if (await _blogCategoryRepo.UpdateAsync(category))
                 if (await _blogCategoryRepo.SaveChangesAsync())
-                    return $"update category: {oldName} to {newName} successfully";
+                    return true;
 
-            throw new Exception($"Update Blog's Category, somthing wrong!");
+            return false;
         }
 
-        public async Task<ActionResult<string>> DeleteSourceCategoryNameAsync( int sourceCateId, string langId)
+        public async Task<bool> DeleteCategoryNameAsync(BlogCategory category)
         {
-            // check if this Source existing before
-            var catSource = await _blogCategoryRepo.ModelDetailsAsync(new GetBlogCategoriesOrBlogCategoryByIdSpeci(sourceCateId, langId));
-            if (catSource == null) return null;
 
-            if (await _blogCategoryRepo.RemoveAsync(catSource))
+            if (await _blogCategoryRepo.RemoveAsync(category))
                 if (await _blogCategoryRepo.SaveChangesAsync())
-                    return $"Delete category: {catSource.Name} successfully";
+                    return true;
 
-            throw new Exception($"Delete Blog's Category, somthing wrong!");
+            return false;
         }
     }
 }

@@ -7,6 +7,8 @@ namespace Core.Dtos.Blogs
 {
     public class BlogCategoryDto
     {
+        public int Id { get; set; }
+
         [Required(ErrorMessage = "field ({0}) is required")]
         [StringLength(150, ErrorMessage = "The length of the {0} must not be less than {2} letters.")]
         [Display(Name = "Language Name")]
