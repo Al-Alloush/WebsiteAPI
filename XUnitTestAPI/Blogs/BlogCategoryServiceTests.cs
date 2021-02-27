@@ -347,14 +347,14 @@ namespace XUnitTestAPI.Blogs
             // Act
             _blogCategoryRepoMock.Setup(x => x.RemoveAsync(cate)).ReturnsAsync(true);
             _blogCategoryRepoMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
-            var resultRemoveCat = await _bcs.DeleteSourceCategoryNameAsync(cate);
+            var resultRemoveCat = await _bcs.DeleteCategoryNameAsync(cate);
 
             // Assert
             Assert.True(resultRemoveCat);
         }
 
         [Fact]
-        public async Task DeleteSourceCategoryNameAsync_IfNotSuccess_ReturnFalse()
+        public async Task DeleteCategoryNameAsync_IfNotSuccess_ReturnFalse()
         {
 
             // Arrange
@@ -372,7 +372,7 @@ namespace XUnitTestAPI.Blogs
             // Act
             _blogCategoryRepoMock.Setup(x => x.RemoveAsync(cate)).ReturnsAsync(false);
             _blogCategoryRepoMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
-            var resultRemoveCat = await _bcs.DeleteSourceCategoryNameAsync(cate);
+            var resultRemoveCat = await _bcs.DeleteCategoryNameAsync(cate);
 
             // Assert
             Assert.False(resultRemoveCat);

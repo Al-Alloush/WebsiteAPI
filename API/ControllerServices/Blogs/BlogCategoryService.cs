@@ -86,7 +86,7 @@ namespace API.ControllerServices.Blogs
             return false;
         }
 
-        public async Task<bool> DeleteSourceCategoryNameAsync(BlogCategory category)
+        public async Task<bool> DeleteCategoryNameAsync(BlogCategory category)
         {
 
             if (await _blogCategoryRepo.RemoveAsync(category))

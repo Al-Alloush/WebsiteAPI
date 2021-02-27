@@ -108,7 +108,7 @@ namespace API.Controllers.Blogs
             var category = await _blogCatService.ReadBlogCategoryByIdAsync(id);
             if (category == null) return BadRequest(new ApiResponse(400, "this Category not exsist"));
 
-            var status = await _blogCatService.DeleteSourceCategoryNameAsync(category);
+            var status = await _blogCatService.DeleteCategoryNameAsync(category);
             if (status)
                 return $"Delete Blog's Category Successfully";
 

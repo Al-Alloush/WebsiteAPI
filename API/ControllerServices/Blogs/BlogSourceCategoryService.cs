@@ -16,7 +16,6 @@ namespace API.ControllerServices.Blogs
             _blogSourceCategoryRepo = blogSourceCategoryRepo;
         }
 
-
         public async Task<IReadOnlyList<BlogSourceCategoryName>> ReadListSourceBlogCategoryNamesAsync()
         {
             var sourceCategs = await _blogSourceCategoryRepo.ListAsync();
