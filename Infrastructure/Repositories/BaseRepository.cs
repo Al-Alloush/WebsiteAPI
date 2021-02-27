@@ -4,12 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class BaseRepository<T> : IBaseRepository<T> where T : class
+    public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         private readonly AppDbContext _context;
 
@@ -23,6 +24,9 @@ namespace Infrastructure.Repositories
             var models = await _context.Set<T>().ToListAsync();
             return models;
         }
+
+        public abstract Task<T> ModelAsync(int id);
+        public abstract Task<T> ModelAsync(string id);
 
         public async Task<bool> AddAsync(T model)
         {
@@ -86,5 +90,7 @@ namespace Infrastructure.Repositories
                 return false;
             }
         }
+
+        
     }
 }

@@ -195,8 +195,8 @@ namespace Infrastructure.Data
         public static async Task AddDefaultBlogCategories(IServiceProvider services)
         {
             var context = services.GetRequiredService<AppDbContext>();
-
-            for (int i = 0; i < BlogCategorySourceNames.Length; i++)
+            //because AddAsync use Stock Data Store, and we need them to start from Food id(1), travel id(2), for that, change the Stock way to start from the end
+            for (int i = BlogCategorySourceNames.Length -1 ; i >= 0; i--)
             {
                 var name = new BlogSourceCategoryName
                 {

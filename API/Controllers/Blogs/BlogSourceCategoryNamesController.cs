@@ -1,4 +1,5 @@
-﻿using API.ErrorsHandlers;
+﻿using API.ControllerServices.Blogs;
+using API.ErrorsHandlers;
 using Core.Dtos.Blogs;
 using Core.Interfaces.Repository;
 using Core.Models.Blogs;
@@ -16,12 +17,15 @@ namespace API.Controllers.Blogs
     [ApiController]
     public class BlogSourceCategoryNamesController : ControllerBase
     {
+        private readonly BlogSourceCategoryService _blogSourceCategService;
         private readonly IGenericRepository<BlogSourceCategoryName> _blogSourceCatNameRepo;
         private readonly IGenericRepository<BlogCategoryList> _blogCategoryListRepo;
 
-        public BlogSourceCategoryNamesController(IGenericRepository<BlogSourceCategoryName> blogSourceCatNameRepo,
+        public BlogSourceCategoryNamesController(BlogSourceCategoryService blogSourceCategService,
+                                                IGenericRepository<BlogSourceCategoryName> blogSourceCatNameRepo,
                                                  IGenericRepository<BlogCategoryList> blogCategoryListRepo)
         {
+            _blogSourceCategService = blogSourceCategService;
             _blogSourceCatNameRepo = blogSourceCatNameRepo;
             _blogCategoryListRepo = blogCategoryListRepo;
         }
@@ -30,13 +34,13 @@ namespace API.Controllers.Blogs
         [HttpGet("ReadListSourceBlogCategoryNames")]
         public async Task<IReadOnlyList<BlogSourceCategoryName>> ReadListSourceBlogCategoryNames()
         {
-            return await _blogSourceCatNameRepo.ListAsync(new GetBlogSourceCategoriesOrSourceCategoryByIdSpeci());
+            return await _blogSourceCategService.ReadListSourceBlogCategoryNamesAsync();
         }
 
         [HttpGet("ReadSourceBlogCategoryName")]
         public async Task<BlogSourceCategoryName> ReadSourceBlogCategoryName([FromForm] int id)
         {
-            return await _blogSourceCatNameRepo.ModelDetailsAsync(new GetBlogSourceCategoriesOrSourceCategoryByIdSpeci(id));
+            return await _blogSourceCategService.ReadSourceBlogCategoryNameAsync(id);
         }
 
         [HttpPost("CreateSourceCategoryName")]

@@ -57,12 +57,17 @@ namespace Infrastructure.Repositories.Blogs
             return categories;
         }
 
-        public async Task<BlogCategory> ModelAsync(int id)
+        public override async Task<BlogCategory> ModelAsync(int id)
         {
             var category = await _context.BlogCategory.Include(b => b.Language)
                                                       .Where(c => c.Id == id)
                                                       .FirstOrDefaultAsync();
             return category;
+        }
+
+        public override Task<BlogCategory> ModelAsync(string id)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<BlogCategory> ModelAsync(int sourceCatId, string langId, string name)
@@ -72,6 +77,8 @@ namespace Infrastructure.Repositories.Blogs
                                                      .FirstOrDefaultAsync();
             return category;
         }
+
+        
 
         //public async Task<bool> AddAsync(BlogCategory category)
         //{
@@ -88,7 +95,7 @@ namespace Infrastructure.Repositories.Blogs
         //        return false;
         //    }
 
-            
+
         //}
 
         //public async Task<bool> UpdateAsync(BlogCategory category)

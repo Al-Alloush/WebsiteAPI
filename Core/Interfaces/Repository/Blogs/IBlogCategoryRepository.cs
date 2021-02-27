@@ -15,8 +15,6 @@ namespace Core.Interfaces.Repository.Blogs
 
         Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId, string langId);
 
-        Task<BlogCategory> ModelAsync(int id);
-
         Task<BlogCategory> ModelAsync(int sourceCatId, string langId, string name);
     }
 }
