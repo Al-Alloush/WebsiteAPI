@@ -28,5 +28,42 @@ namespace API.ControllerServices.Blogs
             var sourceCateg = await _blogSourceCategoryRepo.ModelAsync(id);
             return sourceCateg;
         }
+
+        public async Task<BlogSourceCategoryName> ReadSourceBlogCategoryNameAsync(string name)
+        {
+            var sourceCateg = await _blogSourceCategoryRepo.ModelAsync(name);
+            return sourceCateg;
+        }
+
+        public async Task<bool> CreateSourceCategoryNameAsync(string name)
+        {
+            var sourceCateg = new BlogSourceCategoryName
+            {
+                Name = name
+            };
+            if (await _blogSourceCategoryRepo.AddAsync(sourceCateg))
+                if (await _blogSourceCategoryRepo.SaveChangesAsync())
+                    return true;
+            return false;
+        }
+
+        public async Task<bool> UpdateSourceCategoryNameAsync(BlogSourceCategoryName sourceCateg, string name)
+        {
+            sourceCateg.Name = name;
+
+            if (await _blogSourceCategoryRepo.UpdateAsync(sourceCateg))
+                if (await _blogSourceCategoryRepo.SaveChangesAsync())
+                    return true;
+            return false;
+        }
+        public async Task<bool> DeleteSourceCategoryNameAsync(BlogSourceCategoryName sourceCateg)
+        {
+            // delete rows in BlogCategoryList with this Category source Name
+            if (await _blogSourceCategoryRepo.DeleteAllBlogCategoryList(sourceCateg.Id))
+                if (await _blogSourceCategoryRepo.RemoveAsync(sourceCateg))
+                    if (await _blogSourceCategoryRepo.SaveChangesAsync())
+                        return true;
+            return false;
+        }
     }
 }

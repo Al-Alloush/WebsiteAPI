@@ -9,9 +9,9 @@ namespace Core.Interfaces.Repository
     {
         Task<IReadOnlyList<T>> ListAsync();
 
-        Task<T> ModelAsync(int id);
+        Task<T> ModelAsync(int value);
 
-        Task<T> ModelAsync(string id);
+        Task<T> ModelAsync(string value);
 
         Task<bool> AddAsync(T model);
 

@@ -22,7 +22,7 @@ select * from dbo.BlogSourceCategoryNames
 
 select * from dbo.BlogCategories order by SourceCategoryId
 
-select * from dbo.BlogCategoryList where BlogId = '2001'
+select * from dbo.BlogCategoryList where BlogCategoryId = '6'
 
 
 select * from dbo.UploadUserImagesLists

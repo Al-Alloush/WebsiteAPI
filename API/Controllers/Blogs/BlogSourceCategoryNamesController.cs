@@ -4,11 +4,8 @@ using Core.Dtos.Blogs;
 using Core.Interfaces.Repository;
 using Core.Models.Blogs;
 using Core.Specifications.Blogs;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace API.Controllers.Blogs
@@ -47,33 +44,28 @@ namespace API.Controllers.Blogs
         public async Task<ActionResult<string>> CreateSourceCategoryName([FromForm] string name)
         {
             // check if this Source Name existing before
-            var sourceName = await _blogSourceCatNameRepo.ModelDetailsAsync(new GetBlogSourceCategoriesOrSourceCategoryByIdSpeci(name));
+            var sourceName = await _blogSourceCategService.ReadSourceBlogCategoryNameAsync(name);
             if (sourceName != null) return BadRequest(new ApiResponse(400, $"This {name} category existing before!"));
 
-            if (await _blogSourceCatNameRepo.AddAsync(new BlogSourceCategoryName { Name = name }))
-                if (await _blogSourceCatNameRepo.SaveChangesAsync())
-                    return Ok($"create Source Blog's Category /{name}/ Successfully");
+            if (await _blogSourceCategService.CreateSourceCategoryNameAsync(name))
+                return Ok($"create Source Blog's Category /{name}/ Successfully");
 
-            return BadRequest(new ApiResponse(400, $"somthing wrong!"));
+            return BadRequest(new ApiResponse(400, $"somthing wrong!, with create SourcrCategory"));
         }
 
         [HttpPut("UpdateSourceCategoryName")]
         public async Task<ActionResult<string>> UpdateSourceCategoryName([FromForm] BlogSourceCategoryDto sourcCate)
         {
             // check if this Source existing before
-            var catSource = await _blogSourceCatNameRepo.ModelDetailsAsync(new GetBlogSourceCategoriesOrSourceCategoryByIdSpeci(sourcCate.Id));
-            if (catSource == null) return BadRequest(new ApiResponse(400, $"This category not existing!"));
-
+            var sourceCateg = await _blogSourceCategService.ReadSourceBlogCategoryNameAsync(sourcCate.Id);
+            if (sourceCateg == null) return BadRequest(new ApiResponse(400, $"This category not existing!"));
             // check if this Source Name existing before
-            var sourceName = await _blogSourceCatNameRepo.ModelDetailsAsync(new GetBlogSourceCategoriesOrSourceCategoryByIdSpeci(sourcCate.Name));
+            var sourceName = await _blogSourceCategService.ReadSourceBlogCategoryNameAsync(sourcCate.Name);
             if (sourceName != null) return BadRequest(new ApiResponse(400, $"This {sourcCate.Name} category existing before!"));
-
             // get old name
-            var oldName = catSource.Name;
+            var oldName = sourceCateg.Name;
 
-            catSource.Name = sourcCate.Name;
-            if (await _blogSourceCatNameRepo.UpdateAsync(catSource))
-                if (await _blogSourceCatNameRepo.SaveChangesAsync())
+            if (await _blogSourceCategService.UpdateSourceCategoryNameAsync(sourceCateg, sourcCate.Name))
                     return Ok($"update category: {oldName} to {sourcCate.Name} successfully");
 
             return BadRequest(new ApiResponse(400, $"somthing wrong!"));
@@ -84,17 +76,12 @@ namespace API.Controllers.Blogs
         public async Task<ActionResult<string>> DeleteSourceCategoryName([FromForm] int id)
         {
             // check if this Source existing before
-            var catSource = await _blogSourceCatNameRepo.ModelDetailsAsync(new GetBlogSourceCategoriesOrSourceCategoryByIdSpeci(id));
-            if (catSource == null) return BadRequest(new ApiResponse(400, $"This category not existing!"));
+            // check if this Source existing before
+            var sourceCateg = await _blogSourceCategService.ReadSourceBlogCategoryNameAsync(id);
+            if (sourceCateg == null) return BadRequest(new ApiResponse(400, $"This category not existing!"));
 
-            // delete rows in BlogCategoryList with this Category source Name
-            var blogCatList = await _blogCategoryListRepo.ListAsync(new GetAllBlogCategorisListForThisCategorySpeci(id));
-            foreach (var blgCat in blogCatList)
-                await _blogCategoryListRepo.RemoveAsync(blgCat);
-
-            if (await _blogSourceCatNameRepo.RemoveAsync(catSource))
-                if (await _blogSourceCatNameRepo.SaveChangesAsync())
-                    return Ok($"Delete category: {catSource.Name} successfully");
+            if (await _blogSourceCategService.DeleteSourceCategoryNameAsync(sourceCateg))
+                    return Ok($"Delete category: {sourceCateg.Name} successfully");
 
             return BadRequest(new ApiResponse(400, $"somthing wrong!"));
         }
