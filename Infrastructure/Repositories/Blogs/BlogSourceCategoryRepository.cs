@@ -23,7 +23,8 @@ namespace Infrastructure.Repositories.Blogs
         {
             try
             {
-                var BlogCategoryList = await _context.BlogCategoryList.Where(x => x.BlogCategoryId == id).ToListAsync();
+                var BlogCategoryList = await _context.BlogCategoryList.Where(x => x.BlogCategoryId == id)
+                                                                      .ToListAsync();
                 foreach (var blcat in BlogCategoryList)
                 {
                     _context.Remove(blcat);
@@ -37,15 +38,10 @@ namespace Infrastructure.Repositories.Blogs
             } 
         }
 
-        public override async Task<BlogSourceCategoryName> ModelAsync(int id)
-        {
-            BlogSourceCategoryName blogSourceCateg = await _context.BlogSourceCategoryName.FindAsync(id);
-            return blogSourceCateg;
-        }
-
         public async Task<BlogSourceCategoryName> ModelAsync(string name)
         {
-            BlogSourceCategoryName blogSourceCateg = await _context.BlogSourceCategoryName.FirstOrDefaultAsync(x=>x.Name == name);
+            BlogSourceCategoryName blogSourceCateg = await _context.BlogSourceCategoryName.Where(x => x.Name == name)
+                                                                                          .FirstOrDefaultAsync();
             return blogSourceCateg;
         }
     }

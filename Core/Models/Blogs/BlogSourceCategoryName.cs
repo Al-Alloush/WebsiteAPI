@@ -8,7 +8,7 @@ namespace Core.Models.Blogs
 {
     // BlogCategoryName is the parent of all BlogCategory in any languages
     [Table(name: "BlogSourceCategoryNames")]
-    public class BlogSourceCategoryName : BaseBlogModel
+    public class BlogSourceCategoryName : BaseModels
     {
 
         [StringLength(100, ErrorMessage = "The {0} must be less than {1} characters.")]

@@ -30,7 +30,7 @@ namespace API.ControllerServices.Blogs
         private readonly IGenericRepository<Blog> _blogRepo;
         private readonly IGenericRepository<UploadBlogImagesList> _uploadImageRepo;
         private readonly IBlogCommentRepository _commentRepo;
-        private readonly IGenericRepository<BlogLike> _likeRepo;
+        private readonly IBlogLikeRepository _likeRepo;
         private readonly IGenericRepository<BlogSourceCategoryName> _blogSourceCategoryRepo;
         private readonly IGenericRepository<BlogCategoryList> _blogCategoryListRepo;
         private readonly IGenericRepository<BlogCategory> _blogCategoryRepo;
@@ -43,7 +43,7 @@ namespace API.ControllerServices.Blogs
                                 IGenericRepository<Blog> blogRepo,
                                 IGenericRepository<UploadBlogImagesList> uploadImageRepo,
                                 IBlogCommentRepository commentRepo,
-                                IGenericRepository<BlogLike> likeRepo,
+                                IBlogLikeRepository likeRepo,
                                 IGenericRepository<BlogSourceCategoryName> blogSourceCategoryRepo,
                                 IGenericRepository<BlogCategoryList> blogCategoryListRepo,
                                 IGenericRepository<BlogCategory> blogCategoryRepo,
@@ -99,11 +99,11 @@ namespace API.ControllerServices.Blogs
                     blog.DefaultBlogImage = imagesList.Path;
 
                 // count Blog's comments
-                blog.CommentsCount = await _commentRepo.CountByIdAsync(blog.Id);
+                blog.CommentsCount = await _commentRepo.CountAsync(blog.Id);
                 //count Blog's Like
-                blog.LikesCount = await _likeRepo.CountAsync(new CountLikeBlogSpeci(blog.Id, like: true));
+                blog.LikesCount = await _likeRepo.CountAsync(blog.Id, true);
                 //count Blog's Dislike
-                blog.DislikesCount = await _likeRepo.CountAsync(new CountLikeBlogSpeci(blog.Id, like: false));
+                blog.DislikesCount = await _likeRepo.CountAsync(blog.Id, false);
             }
 
             // return using pagination tools
@@ -127,8 +127,8 @@ namespace API.ControllerServices.Blogs
             _blog.CommentsCount = _blog.BlogComments.Count();
 
             //count the like and Dislike
-            _blog.LikesCount = await _likeRepo.CountAsync(new CountLikeBlogSpeci(blog.Id, like: true));
-            _blog.DislikesCount = await _likeRepo.CountAsync(new CountLikeBlogSpeci(blog.Id, like: false));
+            _blog.LikesCount = await _likeRepo.CountAsync(blog.Id, true);
+            _blog.DislikesCount = await _likeRepo.CountAsync(blog.Id, false);
 
             // Get all the categories for this blog
             IReadOnlyList<BlogCategoryList> categories = await _blogCategoryListRepo.ListAsync(new GetBlogCategoriesListSpeci(_blog.Id));

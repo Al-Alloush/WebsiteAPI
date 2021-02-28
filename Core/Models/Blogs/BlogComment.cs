@@ -8,7 +8,7 @@ using System.Text;
 namespace Core.Models.Blogs
 {
     [Table(name: "BlogComments")]
-    public class BlogComment : BaseBlogModel
+    public class BlogComment : BaseModels
     {
 
         [Required(ErrorMessage = "{0} is Required")]

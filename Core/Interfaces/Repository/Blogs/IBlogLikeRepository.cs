@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Repository.Blogs
 {
-    public interface IBlogCommentRepository : IBaseRepository<BlogComment>
+    public interface IBlogLikeRepository : IBaseRepository<BlogLike>
     {
-
+        Task<int> CountAsync(int id, bool like);
     }
 }

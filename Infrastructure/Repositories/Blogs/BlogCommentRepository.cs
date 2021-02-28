@@ -19,23 +19,12 @@ namespace Infrastructure.Repositories.Blogs
             _context = context;
         }
 
-        public async Task<int> CountByIdAsync(int id)
+        // count all Comment hase BlogId == id
+        public override async Task<int> CountAsync(int id)
         {
             var count = await _context.BlogComment.Where(x=>x.BlogId == id)
                                             .CountAsync();
             return count;
-        }
-
-        public async Task<IReadOnlyList<BlogComment>> ListAsync(int id)
-        {
-            var comments = await _context.BlogComment.Where(x => x.Id == id)
-                                                     .ToListAsync();
-            return comments;
-        }
-
-        public override Task<BlogComment> ModelAsync(int value)
-        {
-            throw new NotImplementedException();
         }
     }
 }

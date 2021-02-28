@@ -9,8 +9,6 @@ namespace Core.Interfaces.Repository.Blogs
     public interface IBlogCategoryRepository : IBaseRepository<BlogCategory>
     {
 
-        Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId);
-
         Task<IReadOnlyList<BlogCategory>> ListAsync(string langId);
 
         Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId, string langId);

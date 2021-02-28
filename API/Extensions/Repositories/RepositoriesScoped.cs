@@ -20,6 +20,7 @@ namespace API.Extensions.Repositories
             services.AddScoped(typeof(IBlogCategoryRepository), typeof(BlogCategoryRepository));
             services.AddScoped(typeof(IBlogSourceCategoryRepository), typeof(BlogSourceCategoryRepository));
             services.AddScoped(typeof(IBlogCommentRepository), typeof(BlogCommentRepository));
+            services.AddScoped(typeof(IBlogLikeRepository), typeof(BlogLikeRepository));
            
 
             return services;

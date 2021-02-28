@@ -30,7 +30,7 @@ namespace Infrastructure.Repositories.Blogs
             return categories;
         }
 
-        public async Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId)
+        public override async Task<IReadOnlyList<BlogCategory>> ListAsync(int sourceCatId)
         {
             var categories = await _context.BlogCategory.Include(b => b.Language)
                                                         .Where(c => c.SourceCategoryId == sourceCatId)

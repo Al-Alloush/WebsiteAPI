@@ -1,4 +1,5 @@
 ﻿using Core.Interfaces.Repository;
+using Core.Models;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
+    public abstract class BaseRepository<T> : IBaseRepository<T> where T : BaseModels
     {
         private readonly AppDbContext _context;
 
@@ -25,7 +26,23 @@ namespace Infrastructure.Repositories
             return models;
         }
 
-        public abstract Task<T> ModelAsync(int value);
+        public virtual async Task<IReadOnlyList<T>> ListAsync(int id)
+        {
+            var models = await _context.Set<T>().Where(x => x.Id == id).ToListAsync();
+            return models;
+        }
+
+        public virtual async Task<T> ModelAsync(int id)
+        {
+            var model = await _context.Set<T>().Where(x => x.Id == id).FirstOrDefaultAsync();
+            return model;
+        }
+
+        public virtual async Task<int> CountAsync(int id)
+        {
+            var counts = await _context.Set<T>().Where(x=>x.Id == id).CountAsync();
+            return counts;
+        }
 
         public async Task<bool> AddAsync(T model)
         {

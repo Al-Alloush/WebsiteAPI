@@ -8,7 +8,7 @@ using System.Text;
 namespace Core.Models.Blogs
 {
     [Table(name: "BlogCategories")]
-    public class BlogCategory : BaseBlogModel
+    public class BlogCategory : BaseModels
     {
 
         [Required(ErrorMessage = "{0} is Required")]

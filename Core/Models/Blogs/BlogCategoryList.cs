@@ -7,7 +7,7 @@ using System.Text;
 namespace Core.Models.Blogs
 {
     [Table(name: "BlogCategoryList")]
-    public class BlogCategoryList : BaseBlogModel
+    public class BlogCategoryList : BaseModels
     {
 
         [Required(ErrorMessage = "{0} is Required")]
