@@ -26,7 +26,6 @@ namespace Infrastructure.Repositories
         }
 
         public abstract Task<T> ModelAsync(int value);
-        public abstract Task<T> ModelAsync(string value);
 
         public async Task<bool> AddAsync(T model)
         {

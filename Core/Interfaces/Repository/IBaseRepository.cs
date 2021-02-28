@@ -11,8 +11,6 @@ namespace Core.Interfaces.Repository
 
         Task<T> ModelAsync(int value);
 
-        Task<T> ModelAsync(string value);
-
         Task<bool> AddAsync(T model);
 
         Task<bool> UpdateAsync(T model);

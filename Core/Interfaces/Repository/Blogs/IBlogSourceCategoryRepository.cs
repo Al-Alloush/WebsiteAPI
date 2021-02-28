@@ -9,6 +9,8 @@ namespace Core.Interfaces.Repository.Blogs
     public interface IBlogSourceCategoryRepository : IBaseRepository<BlogSourceCategoryName>
     {
 
+        Task<BlogSourceCategoryName> ModelAsync(string name);
+
         Task<bool> DeleteAllBlogCategoryList(int id);
     }
 }

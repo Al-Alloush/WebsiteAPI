@@ -43,7 +43,7 @@ namespace Infrastructure.Repositories.Blogs
             return blogSourceCateg;
         }
 
-        public override async Task<BlogSourceCategoryName> ModelAsync(string name)
+        public async Task<BlogSourceCategoryName> ModelAsync(string name)
         {
             BlogSourceCategoryName blogSourceCateg = await _context.BlogSourceCategoryName.FirstOrDefaultAsync(x=>x.Name == name);
             return blogSourceCateg;

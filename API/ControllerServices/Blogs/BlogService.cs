@@ -2,6 +2,7 @@
 using Core.Dtos.Blogs;
 using Core.Helppers;
 using Core.Interfaces.Repository;
+using Core.Interfaces.Repository.Blogs;
 using Core.Models.Blogs;
 using Core.Models.Identity;
 using Core.Models.Uploads;
@@ -16,7 +17,6 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace API.ControllerServices.Blogs
@@ -29,7 +29,7 @@ namespace API.ControllerServices.Blogs
         private readonly UserManager<AppUser> _userManager;
         private readonly IGenericRepository<Blog> _blogRepo;
         private readonly IGenericRepository<UploadBlogImagesList> _uploadImageRepo;
-        private readonly IGenericRepository<BlogComment> _commentRepo;
+        private readonly IBlogCommentRepository _commentRepo;
         private readonly IGenericRepository<BlogLike> _likeRepo;
         private readonly IGenericRepository<BlogSourceCategoryName> _blogSourceCategoryRepo;
         private readonly IGenericRepository<BlogCategoryList> _blogCategoryListRepo;
@@ -42,7 +42,7 @@ namespace API.ControllerServices.Blogs
         public BlogService(UserManager<AppUser> userManager,
                                 IGenericRepository<Blog> blogRepo,
                                 IGenericRepository<UploadBlogImagesList> uploadImageRepo,
-                                IGenericRepository<BlogComment> commentRepo,
+                                IBlogCommentRepository commentRepo,
                                 IGenericRepository<BlogLike> likeRepo,
                                 IGenericRepository<BlogSourceCategoryName> blogSourceCategoryRepo,
                                 IGenericRepository<BlogCategoryList> blogCategoryListRepo,
@@ -99,7 +99,7 @@ namespace API.ControllerServices.Blogs
                     blog.DefaultBlogImage = imagesList.Path;
 
                 // count Blog's comments
-                blog.CommentsCount = await _commentRepo.CountAsync(new GetBlogCommentsSpeci(blog.Id));
+                blog.CommentsCount = await _commentRepo.CountByIdAsync(blog.Id);
                 //count Blog's Like
                 blog.LikesCount = await _likeRepo.CountAsync(new CountLikeBlogSpeci(blog.Id, like: true));
                 //count Blog's Dislike
@@ -122,7 +122,7 @@ namespace API.ControllerServices.Blogs
             var _blog = _mapper.Map<Blog, BlogDto>(blog);
 
             // add all comments for this blog & count Blog's comments
-            var comments = await _commentRepo.ListAsync(new GetBlogCommentsSpeci(_blog.Id));
+            var comments = await _commentRepo.ListAsync(_blog.Id);
             _blog.BlogComments = _mapper.Map<IReadOnlyList<BlogComment>, IReadOnlyList<BlogCommentDto>>(comments);
             _blog.CommentsCount = _blog.BlogComments.Count();
 

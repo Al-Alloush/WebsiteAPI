@@ -65,11 +65,6 @@ namespace Infrastructure.Repositories.Blogs
             return category;
         }
 
-        public override Task<BlogCategory> ModelAsync(string id)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<BlogCategory> ModelAsync(int sourceCatId, string langId, string name)
         {
             var category = await _context.BlogCategory.Include(b => b.Language)
@@ -78,71 +73,5 @@ namespace Infrastructure.Repositories.Blogs
             return category;
         }
 
-        
-
-        //public async Task<bool> AddAsync(BlogCategory category)
-        //{
-        //    try
-        //    {
-        //        var result = await _context.AddAsync(category);
-        //        if (result.State.ToString() == "Added")
-        //            return true;
-        //        else
-        //            return false;
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-
-
-        //}
-
-        //public async Task<bool> UpdateAsync(BlogCategory category)
-        //{
-        //    try
-        //    {
-        //        _context.Set<BlogCategory>().Attach(category);
-        //        _context.Entry(category).State = EntityState.Modified;
-        //        return true;
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-        //}
-
-        //public async Task<bool> RemoveAsync(BlogCategory category)
-        //{
-        //    try
-        //    {
-        //        EntityEntry<BlogCategory> result = _context.Remove(category);
-        //        if (result.State.ToString() == "Deleted")
-        //            return true;
-        //        else
-        //            return false;
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-        //}
-
-        //public async Task<bool> SaveChangesAsync()
-        //{
-        //    try
-        //    {
-        //        // if _context.SaveChangesAsync() bigger than 0 (if success equel 1)  return true (Success Save changes)
-        //        var result = await _context.SaveChangesAsync();
-        //        if (result > 0)
-        //            return true;
-        //        else
-        //            return false;
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-        //}
     }
 }
