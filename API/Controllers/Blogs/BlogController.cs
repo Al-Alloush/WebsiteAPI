@@ -1,13 +1,16 @@
 ﻿using API.ControllerServices.Blogs;
 using API.ErrorsHandlers;
+using AutoMapper;
 using Core.Dtos.Blogs;
 using Core.Helppers;
+using Core.Models.Blogs;
 using Core.Models.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -21,11 +24,21 @@ namespace API.Controllers.Blogs
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly BlogService _blogService;
+        private readonly IMapper _mapper;
+        private readonly BlogCommentService _blogCommentService;
+        private readonly BlogCategoryListService _blogCategoryListService;
 
-        public BlogController(UserManager<AppUser> userManager, BlogService blogService)
+        public BlogController(UserManager<AppUser> userManager, 
+                                BlogService blogService, 
+                                IMapper mapper,
+                                BlogCommentService blogCommentService,
+                                BlogCategoryListService blogCategoryListService)
         {
             _userManager = userManager;
             _blogService = blogService;
+            _mapper = mapper;
+            _blogCommentService = blogCommentService;
+            _blogCategoryListService = blogCategoryListService;
         }
 
         [HttpGet("GetAllBlogCardList")]
@@ -42,12 +55,35 @@ namespace API.Controllers.Blogs
             return pagenation;
         }
 
+
         [HttpGet("GetBlogDetails")]
         public async Task<ActionResult<BlogDto>> GetBlogDetails([FromForm] int id)
         {
-            var blog = await _blogService.GetBlogDetailsAsync(id);
-            return Ok(blog);
+            var blog = await _blogService.GetBlogAsync(id);
+            var blogComments = _blogCommentService.GetCommentsByBlogIdAsync(blog.Id);
+
+            // Get all the categories for this blog
+            var categories = await _blogCategoryListService.GetBlogCategoryListByBlogIdAsync(blog.Id);
+            
+            
+            
+            
+            
+            //_blog.BlogCategoriesList = _mapper.Map<IReadOnlyList<BlogCategoryList>, IReadOnlyList<BlogCategoryListDto>>(categories);
+
+
+            var _blog = _mapper.Map<Blog, BlogDto>(blog);
+
+            return _blog;
         }
+
+
+        //[HttpGet("GetBlogDetails")]
+        //public async Task<ActionResult<BlogDto>> GetBlogDetails([FromForm] int id)
+        //{
+        //    var blog = await _blogService.GetBlogDetailsAsync(id);
+        //    return Ok(blog);
+        //}
 
 
         [Authorize(Roles = "SuperAdmin, Admin, Editor")]

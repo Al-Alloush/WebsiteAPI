@@ -26,5 +26,12 @@ namespace Infrastructure.Repositories.Blogs
                                             .CountAsync();
             return count;
         }
+
+        public async Task<IReadOnlyList<BlogComment>> GetCommentsListByBlogId(int BlogId)
+        {
+            var comments = await _context.BlogComment.Where(x => x.BlogId == BlogId)
+                                                  .ToListAsync();
+            return comments;
+        }
     }
 }

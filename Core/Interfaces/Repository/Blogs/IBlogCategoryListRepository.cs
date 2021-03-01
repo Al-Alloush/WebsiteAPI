@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Repository.Blogs
 {
-    public interface IBlogCommentRepository : IBaseRepository<BlogComment>
+    public interface IBlogCategoryListRepository : IBaseRepository<BlogCategoryList>
     {
-
-        Task<IReadOnlyList<BlogComment>> GetCommentsListByBlogId(int BlogId);
+        Task<IReadOnlyList<BlogCategoryList>> GetBlogCategoryListByBlogIdAsync(int blogId);
     }
 }

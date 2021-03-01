@@ -111,6 +111,16 @@ namespace API.ControllerServices.Blogs
         }
 
 
+        public async Task<Blog> GetBlogAsync(int id)
+        {
+            // get Blog Details
+            var blog = await _blogRepo.ModelDetailsAsync(new GetBlogsListPaginationOrBlogDetailsSpeci(id));
+            if (blog == null)
+                return null;
+
+            return blog;
+        }
+
         public async Task<BlogDto> GetBlogDetailsAsync(int id)
         {
 

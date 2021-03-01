@@ -9,9 +9,8 @@ using System.Text;
 namespace Core.Models.Uploads
 {
     [Table(name: "UploadBlogImagesList")]
-    public class UploadBlogImagesList
+    public class UploadBlogImagesList : BaseModels
     {
-        public int Id { get; set; }
 
         [Required(ErrorMessage = "{0} is Required")]
         [Display(Name = "Name")]
