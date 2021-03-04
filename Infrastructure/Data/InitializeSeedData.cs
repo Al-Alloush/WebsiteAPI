@@ -335,8 +335,7 @@ namespace Infrastructure.Data
                         Path = UploadBlogImageDir+ "img(" + indexImage + ").jfif",
                         BlogId = blog.Id,
                         Default = defaultImage,
-                        UserId = blog.UserId,
-                        UploadTypeId = 3
+                        UserId = blog.UserId
                     };
                     defaultImage = false;
                     await context.UploadBlogImagesList.AddAsync(blogImage);

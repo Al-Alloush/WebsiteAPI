@@ -33,7 +33,6 @@ namespace Infrastructure.Data
             builder.Entity<BlogLike>().HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
 
             // UploadBlogImagesList Blog on delete cascade with BlogId FK
-            builder.Entity<UploadBlogImagesList>().HasOne(p => p.UploadType).WithMany().HasForeignKey(p => p.UploadTypeId).OnDelete(DeleteBehavior.NoAction);
             builder.Entity<UploadBlogImagesList>().HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
 
             base.OnModelCreating(builder);

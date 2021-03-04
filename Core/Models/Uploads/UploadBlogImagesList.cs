@@ -30,8 +30,5 @@ namespace Core.Models.Uploads
         public string UserId { get; set; }
         public AppUser User { get; set; }
 
-        public int UploadTypeId { get; set; }
-        public UploadType UploadType { get; set; }
-
     }
 }

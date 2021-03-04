@@ -12,9 +12,6 @@ namespace Core.Models.Uploads
 
         // Defult Type: ImageProfile, ImageCover, ImageBlog
         public string Name { get; set; }
-
-
-        public virtual ICollection<UploadBlogImagesList> UploadBlogImagesList { get; set; }
         public virtual ICollection<UploadUserImagesList> UploadUserImagesList { get; set; }
     }
 }

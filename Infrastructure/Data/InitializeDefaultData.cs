@@ -26,6 +26,8 @@ namespace Infrastructure.Data
         public static string[] DefLanguageCodeId = { "en", "ar", "de", "fr", "it", "es", "nl", "sv", "tr" };
         public static string[] DefLanguages = { "English", "العربية", "Deutsche", "Français", "Italiana", "español", "Nederlands", "svenska", "Türk" };
         public static string[] DefLangDirection = { "ltr", "rtl", "ltr", "ltr", "ltr", "ltr", "ltr", "ltr", "ltr" };
+        // for now just the image types, maybe leater add fileCV, fileCoverletter, ...
+        public static string[] UserImageUploadTypes = { "imageProfile", "imageCover", "imagePost" };
 
         //
         public static string superAdmin_id;
@@ -72,15 +74,11 @@ namespace Infrastructure.Data
         public static async Task AddDefaultUplodTypes(IServiceProvider services)
         {
             var context = services.GetRequiredService<AppDbContext>();
-
-            // for now just the image types, maybe leater add fileCV, fileCoverletter, ...
-            string[] types = { "imageProfile", "imageCover", "imageBlog" };
-
-            for (int i = 0; i < types.Length; i++)
+            for (int i = 0; i < UserImageUploadTypes.Length; i++)
             {
                 var type = new UploadType
                 {
-                    Name = types[i]
+                    Name = UserImageUploadTypes[i]
                 };
                 await context.UploadType.AddAsync(type);
             }
@@ -196,7 +194,8 @@ namespace Infrastructure.Data
         {
             var context = services.GetRequiredService<AppDbContext>();
 
-            for (int i = 0; i < BlogCategorySourceNames.Length; i++)
+            //because AddAsync use Stock Data Store, and we need them to start from Food id(1), travel id(2), for that, change the Stock way to start from the end
+            for (int i = BlogCategorySourceNames.Length - 1; i >= 0; i--)
             {
                 var name = new BlogSourceCategoryName
                 {
