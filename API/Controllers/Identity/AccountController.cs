@@ -146,6 +146,7 @@ namespace API.Controllers.Identity
                                                where ui.UserId == user.Id && (ui.UploadTypeId == 1 || ui.UploadTypeId == 2) && ui.Default == true
                                                select new UserImagesDto
                                                {
+                                                   Id = ui.Id,
                                                    Path = url + ui.Path,
                                                    Type = typ.Name,
                                                    Default = ui.Default

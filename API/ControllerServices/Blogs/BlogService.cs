@@ -376,8 +376,7 @@ namespace API.ControllerServices.Blogs
                                     Path = uploadsDir + fileName,
                                     BlogId = blog.Id,
                                     Default = defaultImage,
-                                    UserId = userId,
-                                    UploadTypeId = 3 // Blog type
+                                    UserId = userId
                                 };
                                 // first image is default
                                 defaultImage = false;
