@@ -1,4 +1,6 @@
 # Website API
+## This API has been used by some front end programmers to create active templates.
+---
 
 ## EntityFramework ORM using Identity framework , API features:
 - Register.
